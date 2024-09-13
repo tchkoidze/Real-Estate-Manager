@@ -1,11 +1,11 @@
 // Type for the Region
-type Region = {
+export type Region = {
   id: number;
   name: string;
 };
 
 // Type for the City
-type City = {
+export type City = {
   id: number;
   name: string;
   region_id: number;
@@ -31,4 +31,19 @@ export type Agent = {
   name: string;
   surname: string;
   avatar: string;
+};
+
+export type AddProperty = {
+  price: string;
+  zip_code: string;
+  description: string;
+  area: string;
+  city_id: string;
+  address: string;
+  agent_id: string;
+  bedrooms: string;
+  is_rental: string;
+  image: string;
+  created_at: string;
+  id?: number;
 };

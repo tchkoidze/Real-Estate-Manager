@@ -1,12 +1,18 @@
 import axios from "axios";
 import DownArrow from "../icons/ArrowDown";
 import Check from "../icons/check";
-import { useEffect, useState } from "react";
-import { Agent } from "../types";
+import { useEffect, useRef, useState } from "react";
+import { Agent, City, Region } from "../types";
 
 const AddListing = () => {
   const [agents, setAgents] = useState<Agent[] | null>();
   const [openDropDown, setOpenDropDown] = useState(false);
+  const [openRegions, setOpenRegions] = useState(false);
+  const [openCities, setOpenCities] = useState(false);
+  const [cities, setCities] = useState<City[] | null>();
+  const [regions, setRegions] = useState<Region[] | null>();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const getAgents = async () => {
     const token = "9cfde15a-548d-475d-ad3e-eb8aa3a94ec5";
@@ -26,13 +32,44 @@ const AddListing = () => {
     }
   };
 
+  const getCities = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.real-estate-manager.redberryinternship.ge/api/cities"
+      );
+      console.log(55);
+      console.log(response.data);
+      setCities(response.data);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    }
+  };
+
+  const getRegions = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.real-estate-manager.redberryinternship.ge/api/regions"
+      );
+      console.log(55);
+      console.log("regions", response.data);
+      setRegions(response.data);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+    }
+  };
+
   useEffect(() => {
     getAgents();
+    getRegions();
+    getCities();
   }, []);
 
   return (
-    <main className="w-[790px] flex firago-regular text-[14px] leading-[17px] mx-auto">
-      <form className="w-full space-y-20">
+    <main className="w-[790px] flex flex-col firago-regular text-[14px] leading-[17px] mx-auto">
+      <h1 className="firago-medium text-center text-[2rem] leading-9 my-16">
+        ლისტინგის დამატება
+      </h1>
+      <form className="w-full space-y-20 pb-20">
         <div className="w-[226px]">
           <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-2  ">
             გარიგების ტიპი
@@ -96,20 +133,94 @@ const AddListing = () => {
               <label htmlFor="" className="firago-medium">
                 რეგიონი
               </label>
-              <input
-                type="text"
-                className="border border-[#808A93] outline-none rounded-md p-2.5"
-              />
+              <div className="relative">
+                <button
+                  type="button"
+                  className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
+                    openRegions ? "rounded-b-none" : ""
+                  } p-2.5`}
+                  onClick={() => setOpenRegions(!openRegions)}
+                >
+                  <span>აირჩიე რეგიონი</span> <DownArrow />
+                </button>
+                <ul
+                  className={`${
+                    openRegions ? "block" : "hidden"
+                  } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
+                >
+                  {regions?.map((region) => (
+                    <li
+                      key={region.id}
+                      className="border-t border-[#808A93] px-2.5 py-3.5"
+                    >
+                      <label htmlFor={`${region.id}`}>
+                        <input
+                          type="radio"
+                          name="degree"
+                          id={`${region.id}`}
+                          // checked={filters.degree === degree}
+                          // onChange={() =>
+                          //   setFilters((prevFilters) => ({
+                          //     ...prevFilters,
+                          //     degree:
+                          //       prevFilters.degree === degree ? "" : degree,
+                          //   }))
+                          // }
+                          className="hidden"
+                        />
+                        {region.name}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <p></p>
             </div>
             <div className="w-[48%] flex flex-col">
               <label htmlFor="" className="firago-medium">
                 ქალაქი
               </label>
-              <input
-                type="text"
-                className="border border-[#808A93] outline-none rounded-md p-2.5"
-              />
+              <div className="relative">
+                <button
+                  type="button"
+                  className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
+                    openCities ? "rounded-b-none" : ""
+                  } p-2.5`}
+                  onClick={() => setOpenCities(!openCities)}
+                >
+                  <span>აირჩიე ქალაქი</span> <DownArrow />
+                </button>
+                <ul
+                  className={`${
+                    openCities ? "block" : "hidden"
+                  } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
+                >
+                  {cities?.map((city) => (
+                    <li
+                      key={city.id}
+                      className="border-t border-[#808A93] px-2.5 py-3.5"
+                    >
+                      <label htmlFor={`${city.id}`}>
+                        <input
+                          type="radio"
+                          name="degree"
+                          id={`${city.id}`}
+                          // checked={filters.degree === degree}
+                          // onChange={() =>
+                          //   setFilters((prevFilters) => ({
+                          //     ...prevFilters,
+                          //     degree:
+                          //       prevFilters.degree === degree ? "" : degree,
+                          //   }))
+                          // }
+                          className="hidden"
+                        />
+                        {city.name}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <p></p>
             </div>
           </div>
@@ -176,6 +287,30 @@ const AddListing = () => {
                 <Check /> მინიმუმ ხუთი სიტყვა
               </p>
             </div>
+
+            <div className="w-full">
+              <p>ატვირთეთ ფოტო *</p>
+              <div className="w-full h-32 flex items-center justify-center outline-1 outline-dashed rounded-lg">
+                <div //className="h-full flex items-center justify-center"
+                >
+                  <input
+                    type="file"
+                    id="myphoto"
+                    accept=".jpg,.jpeg,.png"
+                    //{...register(name, { required: true })}
+                    //onChange={handleFileChange}
+                    ref={fileInputRef}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <img src="/plus-circle.svg" alt="plus image" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         {/*  */}
@@ -185,15 +320,21 @@ const AddListing = () => {
           </h3>
           <div className="w-1/2">
             <p className="firago-medium mb-1">აირჩიე</p>
-            <div className="border border-[#808A93] rounded-md">
+            <div className="relative">
               <button
                 type="button"
-                className="w-full flex items-center justify-between p-2.5"
+                className={`w-full flex items-center justify-between border border-[#808A93] rounded-md p-2.5 ${
+                  openDropDown && "rounded-b-none"
+                }`}
                 onClick={() => setOpenDropDown(!openDropDown)}
               >
                 <span>აირჩიე აგენტი</span> <DownArrow />
               </button>
-              <div className={`${openDropDown ? "block" : "hidden"}`}>
+              <div
+                className={`${
+                  openDropDown ? "block" : "hidden"
+                } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
+              >
                 <button
                   type="button"
                   className="w-full flex items-center gap-2 border-t border-[#808A93] px-2.5 py-2.5"
@@ -247,3 +388,47 @@ const AddListing = () => {
   );
 };
 export default AddListing;
+
+{
+  /* <div className="border border-[#808A93] rounded-md">
+  <button
+    type="button"
+    className="w-full flex items-center justify-between p-2.5"
+    onClick={() => setOpenDropDown(!openDropDown)}
+  >
+    <span>აირჩიე აგენტი</span> <DownArrow />
+  </button>
+  <div className={`${openDropDown ? "block" : "hidden"}`}>
+    <button
+      type="button"
+      className="w-full flex items-center gap-2 border-t border-[#808A93] px-2.5 py-2.5"
+    >
+      <img src="/plus-circle.svg" alt="plus image" />
+      დაამატე აგენტი
+    </button>
+    <ul>
+      {agents?.map((agent) => (
+        <li key={agent.id} className="border-t border-[#808A93] px-2.5 py-3.5">
+          <label htmlFor={`${agent.id}`}>
+            <input
+              type="radio"
+              name="degree"
+              id={`${agent.id}`}
+              // checked={filters.degree === degree}
+              // onChange={() =>
+              //   setFilters((prevFilters) => ({
+              //     ...prevFilters,
+              //     degree:
+              //       prevFilters.degree === degree ? "" : degree,
+              //   }))
+              // }
+              className="hidden"
+            />
+            {agent.name} {agent.surname}
+          </label>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>; */
+}
