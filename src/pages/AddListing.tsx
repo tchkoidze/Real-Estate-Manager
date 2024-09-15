@@ -2,15 +2,50 @@ import axios from "axios";
 import DownArrow from "../icons/ArrowDown";
 import Check from "../icons/check";
 import { useEffect, useRef, useState } from "react";
-import { Agent, City, Region } from "../types";
+import { AddProperty, Agent, City, Region } from "../types";
+import AddAgent from "../components/AddAgent";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { addListingSchema } from "../schemas/addListingSchema";
+import { useRegions } from "../hooks/useRegions";
+import { useClickOutsideDropdown } from "../hooks/useClickOutsideDropdown";
+
+const initialState = {
+  price: null,
+  zip_code: "",
+  description: "",
+  area: null,
+  city: { name: "", city_id: null },
+  address: "",
+  agent: { name: "", surname: "", agent_id: null },
+  bedrooms: null,
+  is_rental: 1,
+  image: "",
+  region: { name: "", region_id: null },
+};
 
 const AddListing = () => {
   const [agents, setAgents] = useState<Agent[] | null>();
-  const [openDropDown, setOpenDropDown] = useState(false);
-  const [openRegions, setOpenRegions] = useState(false);
-  const [openCities, setOpenCities] = useState(false);
+  //const [openDropDown, setOpenDropDown] = useState<string | null>(null);
+  // const [openDropDown, setOpenDropDown] = useState(false);
+  // const [openRegions, setOpenRegions] = useState(false);
+  // const [openCities, setOpenCities] = useState(false);
   const [cities, setCities] = useState<City[] | null>();
-  const [regions, setRegions] = useState<Region[] | null>();
+  //const [regions, setRegions] = useState<Region[] | null>();
+
+  const { regions } = useRegions();
+  const { openDropDown, toggleDropdown, regionRef, cityRef, agentRef } =
+    useClickOutsideDropdown();
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<AddProperty>({ resolver: zodResolver(addListingSchema) });
+
+  const [data, setData] = useState<AddProperty>(initialState);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -45,31 +80,166 @@ const AddListing = () => {
     }
   };
 
-  const getRegions = async () => {
-    try {
-      const response = await axios.get(
-        "https://api.real-estate-manager.redberryinternship.ge/api/regions"
-      );
-      console.log(55);
-      console.log("regions", response.data);
-      setRegions(response.data);
-    } catch (error) {
-      console.error("Error fetching listings:", error);
-    }
-  };
+  // const getRegions = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       "https://api.real-estate-manager.redberryinternship.ge/api/regions"
+  //     );
+  //     console.log(55);
+  //     console.log("regions", response.data);
+  //     setRegions(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching listings:", error);
+  //   }
+  // };
 
   useEffect(() => {
     getAgents();
-    getRegions();
+    // getRegions();
     getCities();
   }, []);
+
+  //const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  //<File | null>(null);
+  const [imageDataUri, setImageDataUri] = useState<string>("");
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; // Get the first selected file
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        localStorage.setItem("uploadedImage", reader.result as string);
+        //localStorage.setItem("uploadedImageName", file.name as string);
+        setImageDataUri(reader.result as string);
+        handleInputChange("image", reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      //setSelectedFile(reader.result as string); // Save the file to state
+      // You can now process the file (e.g., upload it to a server or display a preview)
+      console.log("Selected file:", file);
+    }
+  };
+
+  function dataURLtoFile(dataurl: any, filename: any) {
+    if (data.image !== null) {
+      var arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+
+      return new File([u8arr], filename, { type: mime });
+    }
+  }
+
+  const onSubmit: SubmitHandler<AddProperty> = async () => {
+    const file =
+      typeof data.image === "string"
+        ? dataURLtoFile(data.image, "property_image") || ""
+        : data.image;
+
+    console.log(file);
+
+    const formData = new FormData();
+    formData.append("address", data.address);
+    formData.append("image", file);
+    formData.append(
+      "region_id",
+      data.region.region_id !== null ? data.region.region_id.toString() : ""
+    );
+    formData.append("description", data.description || "");
+    formData.append(
+      "city_id",
+      data.city.city_id !== null ? data.city.city_id.toString() : ""
+    );
+    formData.append("zip_code", data.zip_code || "");
+    formData.append("price", data.price !== null ? data.price.toString() : "");
+    formData.append("area", data.area !== null ? data.area.toString() : "");
+    formData.append(
+      "bedrooms",
+      data.bedrooms !== null ? data.bedrooms.toString() : ""
+    );
+    formData.append(
+      "is_rental",
+      data.is_rental !== null ? data.is_rental.toString() : ""
+    );
+    formData.append(
+      "agent_id",
+      data.agent.agent_id !== null ? data.agent.agent_id.toString() : ""
+    );
+
+    // try {
+    //   const res = await axios.post(
+    //     "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
+    //     formData,
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+    //         "Content-Type": "multipart/form-data",
+    //       },
+    //     }
+    //   );
+    //   if (res.status === 201) {
+    //     console.log(res.data);
+    //     // Clear localStorage and reset form state
+    //     localStorage.removeItem("addListData");
+    //     //setData(initialState);
+    //     console.log(res);
+    //   }
+    //   console.log(res);
+    // } catch (error) {
+    //   console.log(error);
+    // }
+
+    //return console.log(777);
+  };
+
+  const handleInputChange = (fieldName: string, value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      [fieldName]: value,
+    }));
+  };
+
+  const handleRentalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value); // Convert the string value '0' or '1' to a number
+    setData((prevData) => ({
+      ...prevData,
+      is_rental: value, // Directly set the value as either 0 or 1
+    }));
+  };
+
+  const storedData = JSON.parse(localStorage.getItem("addListData")!);
+  useEffect(() => {
+    if (storedData) {
+      setData(storedData);
+      setValue("address", storedData.address);
+      setValue("zip_code", storedData.zip_code);
+      setValue("price", storedData.price);
+      setValue("area", storedData.area);
+      setValue("bedrooms", storedData.bedrooms);
+      setValue("description", storedData.description);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("addListData", JSON.stringify(data));
+  }, [data]);
 
   return (
     <main className="w-[790px] flex flex-col firago-regular text-[14px] leading-[17px] mx-auto">
       <h1 className="firago-medium text-center text-[2rem] leading-9 my-16">
         ლისტინგის დამატება
       </h1>
-      <form className="w-full space-y-20 pb-20">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full space-y-20 pb-20"
+      >
         <div className="w-[226px]">
           <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-2  ">
             გარიგების ტიპი
@@ -77,19 +247,25 @@ const AddListing = () => {
           <div className="flex items-center justify-between">
             <div>
               <input
+                value={0}
                 type="radio"
                 id="sale"
                 name="propertyStatus"
                 className="mr-2"
+                onChange={handleRentalChange}
+                checked={data.is_rental === 0}
               />
               <label htmlFor="sale">იყიდება</label>
             </div>
             <div>
               <input
+                value={1}
                 type="radio"
                 id="rent"
                 name="propertyStatus"
                 className="mr-2"
+                onChange={handleRentalChange}
+                checked={data.is_rental === 1}
               />
               <label htmlFor="rent">ქირავდება</label>
             </div>
@@ -109,63 +285,98 @@ const AddListing = () => {
                 id="address"
                 type="text"
                 className="border border-[#808A93] outline-none rounded-md p-2.5 my-1"
+                {...register("address", {
+                  onChange: (e) => handleInputChange("address", e.target.value),
+                })}
               />
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.address ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check />
                 მინიმუმ ორი სიმბოლო
               </p>
             </div>
             <div className="w-[48%] flex flex-col">
-              <label htmlFor="index" className="firago-medium">
+              <label htmlFor="zipCode" className="firago-medium">
                 საფოსტო ინდექსი *
               </label>
               <input
-                id="index"
-                type="text"
+                id="zipCode"
                 className="border border-[#808A93] outline-none rounded-md p-2.5 my-1"
+                {...register("zip_code", {
+                  onChange: (e) =>
+                    handleInputChange("zip_code", e.target.value),
+                })}
               />
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.zip_code ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check />
                 მხოლოდ რიცხვები
               </p>
             </div>
+
             <div className="w-[48%] flex flex-col">
               <label htmlFor="" className="firago-medium">
                 რეგიონი
               </label>
-              <div className="relative">
+              <div ref={regionRef} className="relative my-1">
                 <button
                   type="button"
                   className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
-                    openRegions ? "rounded-b-none" : ""
+                    //openRegions ? "rounded-b-none" : ""
+                    openDropDown === "region" ? "rounded-b-none" : ""
                   } p-2.5`}
-                  onClick={() => setOpenRegions(!openRegions)}
+                  //onClick={() => setOpenRegions(!openRegions)}
+                  onClick={() => toggleDropdown("region")}
                 >
-                  <span>აირჩიე რეგიონი</span> <DownArrow />
+                  <span>
+                    {data.region.name.length > 0
+                      ? data.region.name
+                      : "აირჩიე რეგიონი"}
+                  </span>
+                  <DownArrow />
                 </button>
                 <ul
                   className={`${
-                    openRegions ? "block" : "hidden"
+                    //openRegions ? "block" : "hidden"
+                    openDropDown === "region" ? "block" : "hidden"
                   } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
                 >
                   {regions?.map((region) => (
                     <li
-                      key={region.id}
-                      className="border-t border-[#808A93] px-2.5 py-3.5"
+                      key={region.id} //className="border-t border-[#808A93] px-2.5 py-3.5"
                     >
-                      <label htmlFor={`${region.id}`}>
+                      <label
+                        htmlFor={`${region.id}`}
+                        className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
+                      >
                         <input
                           type="radio"
-                          name="degree"
+                          name="region"
                           id={`${region.id}`}
                           // checked={filters.degree === degree}
-                          // onChange={() =>
-                          //   setFilters((prevFilters) => ({
-                          //     ...prevFilters,
-                          //     degree:
-                          //       prevFilters.degree === degree ? "" : degree,
-                          //   }))
-                          // }
+                          onChange={() =>
+                            setData((prevData) => ({
+                              ...prevData,
+                              region: {
+                                name: region.name,
+                                region_id:
+                                  prevData.region.region_id === region.id
+                                    ? null
+                                    : region.id,
+                              },
+                              city: {
+                                // Reset city values when region is changed
+                                name: "",
+                                city_id: null,
+                              },
+                            }))
+                          }
                           className="hidden"
                         />
                         {region.name}
@@ -176,53 +387,75 @@ const AddListing = () => {
               </div>
               <p></p>
             </div>
-            <div className="w-[48%] flex flex-col">
-              <label htmlFor="" className="firago-medium">
-                ქალაქი
-              </label>
-              <div className="relative">
-                <button
-                  type="button"
-                  className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
-                    openCities ? "rounded-b-none" : ""
-                  } p-2.5`}
-                  onClick={() => setOpenCities(!openCities)}
-                >
-                  <span>აირჩიე ქალაქი</span> <DownArrow />
-                </button>
-                <ul
-                  className={`${
-                    openCities ? "block" : "hidden"
-                  } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
-                >
-                  {cities?.map((city) => (
-                    <li
-                      key={city.id}
-                      className="border-t border-[#808A93] px-2.5 py-3.5"
-                    >
-                      <label htmlFor={`${city.id}`}>
-                        <input
-                          type="radio"
-                          name="degree"
-                          id={`${city.id}`}
-                          // checked={filters.degree === degree}
-                          // onChange={() =>
-                          //   setFilters((prevFilters) => ({
-                          //     ...prevFilters,
-                          //     degree:
-                          //       prevFilters.degree === degree ? "" : degree,
-                          //   }))
-                          // }
-                          className="hidden"
-                        />
-                        {city.name}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
+            {data.region.region_id !== null && (
+              <div className="w-[48%] flex flex-col">
+                <label htmlFor="" className="firago-medium">
+                  ქალაქი
+                </label>
+                <div ref={cityRef} className="relative my-1">
+                  <button
+                    type="button"
+                    className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
+                      // openCities ? "rounded-b-none" : ""
+                      openDropDown === "city" ? "rounded-b-none" : ""
+                    } p-2.5`}
+                    // onClick={() => setOpenCities(!openCities)}
+                    onClick={() => toggleDropdown("city")}
+                  >
+                    <span>
+                      {data.city.name.length > 0
+                        ? data.city.name
+                        : "აირჩიე ქალაქი"}{" "}
+                    </span>{" "}
+                    <DownArrow />
+                  </button>
+                  <ul
+                    className={`${
+                      // openCities ? "block" : "hidden"
+                      openDropDown === "city" ? "block" : "hidden"
+                    } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
+                  >
+                    {cities
+                      ?.filter(
+                        (city) => city.region_id === data.region.region_id
+                      )
+                      .map((city) => (
+                        <li
+                          key={city.name}
+                          // className="border-t border-[#808A93] px-2.5 py-3.5"
+                        >
+                          <label
+                            htmlFor={`${city.name}`}
+                            className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
+                          >
+                            <input
+                              type="radio"
+                              name="city"
+                              id={`${city.name}`}
+                              // checked={filters.degree === degree}
+                              onChange={() =>
+                                setData((prevData) => ({
+                                  ...prevData,
+                                  city: {
+                                    name: city.name,
+                                    city_id:
+                                      prevData.city.city_id === city.id
+                                        ? null
+                                        : city.id,
+                                  },
+                                }))
+                              }
+                              className="hidden"
+                            />
+                            {city.name}
+                          </label>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+                <p></p>
               </div>
-              <p></p>
-            </div>
+            )}
           </div>
         </div>
         {/*  */}
@@ -239,8 +472,15 @@ const AddListing = () => {
                 id="price"
                 type="text"
                 className="border border-[#808A93] outline-none rounded-md p-2.5 my-1"
+                {...register("price", {
+                  onChange: (e) => handleInputChange("price", e.target.value),
+                })}
               />
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.price ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check /> მხოლოდ რიცხვები
               </p>
             </div>
@@ -253,8 +493,15 @@ const AddListing = () => {
                 id="area"
                 type="text"
                 className="border border-[#808A93] outline-none rounded-md p-2.5 my-1"
+                {...register("area", {
+                  onChange: (e) => handleInputChange("area", e.target.value),
+                })}
               />
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.area ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check /> მხოლოდ რიცხვები
               </p>
             </div>
@@ -267,8 +514,16 @@ const AddListing = () => {
                 id="bedroom"
                 type="text"
                 className="border border-[#808A93] outline-none rounded-md p-2.5 my-1"
+                {...register("bedrooms", {
+                  onChange: (e) =>
+                    handleInputChange("bedrooms", e.target.value),
+                })}
               />
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.bedrooms ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check /> მხოლოდ რიცხვები
               </p>
             </div>
@@ -278,38 +533,80 @@ const AddListing = () => {
                 აღწერა *
               </label>
               <textarea
-                name=""
                 id="description"
                 rows={6}
                 className="resize-none outline-none border border-[#808A93] rounded-md p-2.5 my-1"
+                {...register("description", {
+                  onChange: (e) =>
+                    handleInputChange("description", e.target.value),
+                })}
               ></textarea>
-              <p className="flex items-center gap-2">
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.description ? "text-[#F93B1D]" : ""
+                }`}
+              >
                 <Check /> მინიმუმ ხუთი სიტყვა
               </p>
             </div>
 
             <div className="w-full">
-              <p>ატვირთეთ ფოტო *</p>
-              <div className="w-full h-32 flex items-center justify-center outline-1 outline-dashed rounded-lg">
+              <p className="firago-medium">ატვირთეთ ფოტო *</p>
+              <div className="w-full h-32 flex items-center justify-center outline-1 outline-dashed rounded-lg my-1">
                 <div //className="h-full flex items-center justify-center"
                 >
                   <input
                     type="file"
                     id="myphoto"
                     accept=".jpg,.jpeg,.png"
-                    //{...register(name, { required: true })}
-                    //onChange={handleFileChange}
+                    {...register("image", { required: true })}
+                    onChange={handleFileChange}
                     ref={fileInputRef}
                     className="hidden"
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <img src="/plus-circle.svg" alt="plus image" />
-                  </button>
+
+                  {data.image ? (
+                    <div className="relative">
+                      <img
+                        src={data.image}
+                        alt="Uploaded"
+                        className="w-[92px] h-[82px]"
+                      />
+                      <button
+                        type="button"
+                        //onClick={() => setImageDataUri("")}
+                        onClick={() =>
+                          setData((prevData) => ({
+                            ...prevData,
+                            ["image"]: "",
+                          }))
+                        }
+                        className="absolute bottom-0 right-0 transform translate-x-1/3 translate-y-1/3 "
+                      >
+                        <img
+                          alt="trashbin icon"
+                          src="/trashbin.svg"
+                          className="hover:scale-[1.1]"
+                        />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <img src="/plus-circle.svg" alt="plus image" />
+                    </button>
+                  )}
                 </div>
               </div>
+              <p
+                className={`flex items-center gap-2 ${
+                  errors.image ? "text-[#F93B1D]" : ""
+                }`}
+              >
+                <Check /> ატვირთე ფოტო
+              </p>
             </div>
           </div>
         </div>
@@ -318,7 +615,7 @@ const AddListing = () => {
           <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-4">
             აგენტი
           </h3>
-          <div className="w-1/2">
+          <div ref={agentRef} className="w-1/2">
             <p className="firago-medium mb-1">აირჩიე</p>
             <div className="relative">
               <button
@@ -326,9 +623,15 @@ const AddListing = () => {
                 className={`w-full flex items-center justify-between border border-[#808A93] rounded-md p-2.5 ${
                   openDropDown && "rounded-b-none"
                 }`}
-                onClick={() => setOpenDropDown(!openDropDown)}
+                onClick={() => toggleDropdown("agent")}
+                //onClick={() => setOpenDropDown(!openDropDown)}
               >
-                <span>აირჩიე აგენტი</span> <DownArrow />
+                <span>
+                  {data.agent.agent_id
+                    ? `${data.agent.name} ${data.agent.surname}`
+                    : "აირჩიე აგენტი"}
+                </span>
+                <DownArrow />
               </button>
               <div
                 className={`${
@@ -346,21 +649,30 @@ const AddListing = () => {
                   {agents?.map((agent) => (
                     <li
                       key={agent.id}
-                      className="border-t border-[#808A93] px-2.5 py-3.5"
+                      // className="border-t border-[#808A93] px-2.5 py-3.5"
                     >
-                      <label htmlFor={`${agent.id}`}>
+                      <label
+                        htmlFor={`${agent.id}`}
+                        className="block w-full border-t border-[#808A93] px-2.5 py-3.5"
+                      >
                         <input
                           type="radio"
                           name="degree"
                           id={`${agent.id}`}
                           // checked={filters.degree === degree}
-                          // onChange={() =>
-                          //   setFilters((prevFilters) => ({
-                          //     ...prevFilters,
-                          //     degree:
-                          //       prevFilters.degree === degree ? "" : degree,
-                          //   }))
-                          // }
+                          onChange={() =>
+                            setData((prevData) => ({
+                              ...prevData,
+                              agent: {
+                                name: agent.name,
+                                surname: agent.surname,
+                                agent_id:
+                                  prevData.agent.agent_id === agent.id
+                                    ? null
+                                    : agent.id,
+                              },
+                            }))
+                          }
                           className="hidden"
                         />
                         {agent.name} {agent.surname}
@@ -384,51 +696,8 @@ const AddListing = () => {
           </button>
         </div>
       </form>
+      {/* <AddAgent /> */}
     </main>
   );
 };
 export default AddListing;
-
-{
-  /* <div className="border border-[#808A93] rounded-md">
-  <button
-    type="button"
-    className="w-full flex items-center justify-between p-2.5"
-    onClick={() => setOpenDropDown(!openDropDown)}
-  >
-    <span>აირჩიე აგენტი</span> <DownArrow />
-  </button>
-  <div className={`${openDropDown ? "block" : "hidden"}`}>
-    <button
-      type="button"
-      className="w-full flex items-center gap-2 border-t border-[#808A93] px-2.5 py-2.5"
-    >
-      <img src="/plus-circle.svg" alt="plus image" />
-      დაამატე აგენტი
-    </button>
-    <ul>
-      {agents?.map((agent) => (
-        <li key={agent.id} className="border-t border-[#808A93] px-2.5 py-3.5">
-          <label htmlFor={`${agent.id}`}>
-            <input
-              type="radio"
-              name="degree"
-              id={`${agent.id}`}
-              // checked={filters.degree === degree}
-              // onChange={() =>
-              //   setFilters((prevFilters) => ({
-              //     ...prevFilters,
-              //     degree:
-              //       prevFilters.degree === degree ? "" : degree,
-              //   }))
-              // }
-              className="hidden"
-            />
-            {agent.name} {agent.surname}
-          </label>
-        </li>
-      ))}
-    </ul>
-  </div>
-</div>; */
-}

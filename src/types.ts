@@ -34,16 +34,15 @@ export type Agent = {
 };
 
 export type AddProperty = {
-  price: string;
+  price: number | null;
   zip_code: string;
   description: string;
-  area: string;
-  city_id: string;
+  area: number | null;
+  city: { name: string; city_id: number | null };
   address: string;
-  agent_id: string;
-  bedrooms: string;
-  is_rental: string;
+  agent: { name: string; surname: string; agent_id: number | null };
+  bedrooms: number | null;
+  is_rental: number | null;
   image: string;
-  created_at: string;
-  id?: number;
+  region: { name: string; region_id: number | null };
 };
