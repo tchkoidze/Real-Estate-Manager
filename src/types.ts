@@ -12,7 +12,7 @@ export type City = {
   region: Region;
 };
 
-// Type for the Property
+// Type for the Property at listings page
 export type Property = {
   id: number;
   address: string;
@@ -26,10 +26,38 @@ export type Property = {
   city: City;
 };
 
+// Type for the property at the propery page
+export interface PropertyId {
+  id: number;
+  address: string;
+  image: string;
+  zip_code: string;
+  description: string;
+  price: number;
+  bedrooms: number;
+  area: number;
+  is_rental: number;
+  agent_id: number;
+  city_id: number;
+  created_at: string;
+  city: City;
+  agent: Agent;
+}
+
 export type Agent = {
   id: number;
   name: string;
   surname: string;
+  avatar: string;
+  email?: string;
+  phone?: string;
+};
+
+export type AddAgentData = {
+  name: string;
+  surname: string;
+  email: string;
+  phone: number | null;
   avatar: string;
 };
 
@@ -46,3 +74,10 @@ export type AddProperty = {
   image: string;
   region: { name: string; region_id: number | null };
 };
+
+// Tooltip.tsx
+export interface TooltipProps {
+  text: string;
+  children: React.ReactNode;
+  className?: string;
+}

@@ -2,8 +2,7 @@ import axios from "axios";
 import DownArrow from "../icons/ArrowDown";
 import Check from "../icons/check";
 import { useEffect, useRef, useState } from "react";
-import { AddProperty, Agent, City, Region } from "../types";
-import AddAgent from "../components/AddAgent";
+import { AddProperty, Agent, City } from "../types";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addListingSchema } from "../schemas/addListingSchema";
@@ -24,7 +23,11 @@ const initialState = {
   region: { name: "", region_id: null },
 };
 
-const AddListing = () => {
+const AddListing = ({
+  setOpenAddAgent,
+}: {
+  setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [agents, setAgents] = useState<Agent[] | null>();
   //const [openDropDown, setOpenDropDown] = useState<string | null>(null);
   // const [openDropDown, setOpenDropDown] = useState(false);
@@ -101,7 +104,7 @@ const AddListing = () => {
 
   //const [selectedFile, setSelectedFile] = useState<string | null>(null);
   //<File | null>(null);
-  const [imageDataUri, setImageDataUri] = useState<string>("");
+  //const [imageDataUri, setImageDataUri] = useState<string>("");
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Get the first selected file
@@ -110,7 +113,7 @@ const AddListing = () => {
       reader.onloadend = () => {
         localStorage.setItem("uploadedImage", reader.result as string);
         //localStorage.setItem("uploadedImageName", file.name as string);
-        setImageDataUri(reader.result as string);
+        //setImageDataUri(reader.result as string);
         handleInputChange("image", reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -640,6 +643,7 @@ const AddListing = () => {
               >
                 <button
                   type="button"
+                  onClick={() => setOpenAddAgent(true)}
                   className="w-full flex items-center gap-2 border-t border-[#808A93] px-2.5 py-2.5"
                 >
                   <img src="/plus-circle.svg" alt="plus image" />

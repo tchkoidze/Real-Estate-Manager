@@ -1,40 +1,31 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
-import Listing from "./pages/Listing";
+import Listings from "./pages/Listings";
 import AddListing from "./pages/AddListing";
+import Header from "./layouts/Header";
+import AddAgent from "./components/AddAgent";
+import PropertPage from "./pages/PropertyPage";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [openAddAgent, setOpenAddAgent] = useState(false);
 
   return (
     <>
-      {/* <div className="text-3xl">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
+      <Header />
       <Routes>
-        <Route path="/" element={<Listing />}></Route>
-        <Route path="/addListing" element={<AddListing />} />
+        <Route
+          path="/"
+          element={<Listings setOpenAddAgent={setOpenAddAgent} />}
+        ></Route>
+        <Route
+          path="/addListing"
+          element={<AddListing setOpenAddAgent={setOpenAddAgent} />}
+        />
+        <Route path="/property/:id" element={<PropertPage />} />
       </Routes>
+
+      {openAddAgent && <AddAgent setOpenAddAgent={setOpenAddAgent} />}
     </>
   );
 }
