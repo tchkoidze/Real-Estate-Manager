@@ -81,3 +81,10 @@ export interface TooltipProps {
   children: React.ReactNode;
   className?: string;
 }
+
+export type Filters = {
+  region: string[] | [];
+  price: [number, number] | [];
+  area: [number, number] | [];
+  bedrooms: number | null;
+};

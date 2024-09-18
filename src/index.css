@@ -65,3 +65,86 @@ body {
     scrollbar-width: none; /* Firefox */
   }
 }
+
+/* Add this to your global CSS or a relevant CSS module */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* .custom-radio:before {
+  content: " ";
+  display: inline-block;
+  position: absolute;
+  top: -1.8px;
+  left: -1.5px;
+
+  width: 17px;
+  height: 17px;
+  border-radius: 11px;
+  border: 1px solid #021526;
+  background-color: transparent;
+} */
+
+/* .custom-radio #rent:checked:after {
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  content: " ";
+  display: block;
+  background: #004c97;
+} */
+
+.radio-item {
+  display: inline-block;
+  position: relative;
+  padding: 0 6px;
+  margin: 10px 0 0;
+}
+
+.radio-item input[type="radio"] {
+  opacity: 0; /* Hide the default radio button */
+  position: absolute; /* Ensure it's not affecting layout */
+}
+
+.radio-item label {
+  color: #666;
+  font-weight: normal;
+  position: relative;
+  padding-left: 30px; /* Adjust space for custom radio button */
+}
+
+/* Custom radio button */
+.radio-item label::before {
+  content: " ";
+  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid #021526;
+  background-color: transparent;
+}
+
+/* Checked state */
+.radio-item input[type="radio"]:checked + label::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  left: 5px;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #021526;
+}

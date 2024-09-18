@@ -1,15 +1,22 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { HiLocationMarker } from "react-icons/hi";
-import { Property } from "../types";
+import { Filters, Property } from "../types";
 import { Link } from "react-router-dom";
 import DownArrow from "../icons/ArrowDown";
 import { useRegions } from "../hooks/useRegions";
 import { useFilterOpen } from "../hooks/useFilterOpen";
 import { price } from "../data/filterData";
 import Tooltip from "../components/Tooltip";
+import { IoIosClose } from "react-icons/io";
 
 const bedroomsQuantity = [1, 2, 3, 4];
+const initialFilters: Filters = {
+  region: [],
+  price: [],
+  area: [],
+  bedrooms: null,
+};
 
 const Listings = ({
   setOpenAddAgent,
@@ -19,6 +26,8 @@ const Listings = ({
   const [realEstate, setRealEstate] = useState<Property[]>([]);
 
   const { regions } = useRegions();
+
+  const [filters, setFilters] = useState<Filters>(initialFilters);
 
   const {
     openDropDown,
@@ -54,229 +63,263 @@ const Listings = ({
     <main className="firago-regular">
       <section className="flex flex-col items-center">
         <div className="w-[1596px] flex justify-between text-base leading-[19.2px] pt-[77px] pb-8">
-          <nav className="flex space-x-6 border border-[#DBDBDB] rounded-[10px] p-[6px]">
-            <div ref={regionRef} className="relative">
-              <button
-                onClick={() => toggleDropdown("region")}
-                className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
-                  openDropDown === "region" && "bg-[#F3F3F3] rounded-md"
-                }`}
-              >
-                რეგიონი{" "}
-                <span
-                  className={`${openDropDown === "region" && "rotate-180"}`}
+          {/* filter */}
+          <div>
+            <div className="flex space-x-6 border border-[#DBDBDB] rounded-[10px] p-[6px]">
+              <div ref={regionRef} className="relative">
+                <button
+                  onClick={() => toggleDropdown("region")}
+                  className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
+                    openDropDown === "region" && "bg-[#F3F3F3] rounded-md"
+                  }`}
                 >
-                  <DownArrow />
-                </span>
-              </button>
-              <div
-                className={`${
-                  openDropDown === "region" ? "block" : "hidden"
-                } absolute top-12 -left-2 z-10 min-w-[731px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
-              >
-                <h3 className="firago-medium">რეგიონის მიხედვით</h3>
-                <ul className="grid grid-cols-3 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
-                  {regions?.map((region) => (
-                    <li key={region.name}>
-                      <label
-                        htmlFor={region.name.toString()}
-                        //onChange={() => handleServiceChange(service.id)}
-                        className="w-full flex items-center gap-2"
-                      >
-                        <input
-                          type="checkbox"
-                          name=""
-                          id={region.name.toString()}
-                        />
-                        {region.name}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-
-                <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] rounded-lg px-3 py-2 ml-auto">
-                  არჩევა
+                  რეგიონი{" "}
+                  <span
+                    className={`${openDropDown === "region" && "rotate-180"}`}
+                  >
+                    <DownArrow />
+                  </span>
                 </button>
-              </div>
-            </div>
-
-            <div ref={priceRef} className="relative">
-              <button
-                onClick={() => toggleDropdown("price")}
-                //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
-                className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
-                  openDropDown === "price" && "bg-[#F3F3F3] rounded-md"
-                }`}
-              >
-                საფასო კატეგორია{" "}
-                <span className={`${openDropDown === "price" && "rotate-180"}`}>
-                  <DownArrow />
-                </span>
-              </button>
-
-              <div
-                className={`${
-                  openDropDown === "price" ? "block" : "hidden"
-                } absolute top-12 -left-2 z-10 w-[382px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
-              >
-                <h3 className="firago-medium mb-6">ფასის მიხედვით</h3>
-                <div className="flex gap-[15px]">
-                  <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
-                    <input
-                      type="text"
-                      placeholder="დან"
-                      className="w-full outline-none"
-                    />
-                    ₾
-                  </div>
-                  <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
-                    <input
-                      type="text"
-                      placeholder="დან"
-                      className="w-full outline-none"
-                    />{" "}
-                    ₾
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
-                  <div>
-                    <h4 className="firago-medium mb-4">მინ. ფასი</h4>
-                    <ul className="space-y-2">
-                      {price.map((price) => (
-                        <li key={`min${String(price.price)}`}>
-                          {" "}
-                          {price.price} ₾
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="firago-medium mb-4">მაქს. ფასი</h4>
-                    <ul className="space-y-2">
-                      {price.map((price) => (
-                        <li key={`max${String(price.price)}`}>
-                          {" "}
-                          {price.price} ₾
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] rounded-lg px-3 py-2 ml-auto">
-                  არჩევა
-                </button>
-              </div>
-            </div>
-
-            <div ref={areaRef} className="relative">
-              <button
-                onClick={() => toggleDropdown("area")}
-                //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
-                className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
-                  openDropDown === "area" && "bg-[#F3F3F3] rounded-md"
-                }`}
-              >
-                ფართობი{" "}
-                <span className={`${openDropDown === "area" && "rotate-180"}`}>
-                  <DownArrow />
-                </span>
-              </button>
-
-              <div
-                className={`${
-                  openDropDown === "area" ? "block" : "hidden"
-                } absolute top-12 -left-2 z-10 w-[382px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
-              >
-                <h3 className="firago-medium mb-6">ფართობის მიხედვით</h3>
-                <div className="flex gap-[15px]">
-                  <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
-                    <input
-                      type="text"
-                      placeholder="დან"
-                      className="w-full outline-none"
-                    />
-                    <span>მ&sup2;</span>
-                  </div>
-                  <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
-                    <input
-                      type="text"
-                      placeholder="დან"
-                      className="w-full outline-none"
-                    />{" "}
-                    <span>მ&sup2;</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
-                  <div>
-                    <h4 className="firago-medium mb-4">მინ. ფასი</h4>
-                    <ul className="space-y-2">
-                      {price.map((price) => (
-                        <li key={`minarea${String(price.price)}`}>
-                          {" "}
-                          {price.price} <span>მ&sup2;</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="firago-medium mb-4">მაქს. ფასი</h4>
-                    <ul className="space-y-2">
-                      {price.map((price) => (
-                        <li key={`maxarea${String(price.price)}`}>
-                          {" "}
-                          {price.price} <span>მ&sup2;</span>{" "}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] rounded-lg px-3 py-2 ml-auto">
-                  არჩევა
-                </button>
-              </div>
-            </div>
-
-            <div ref={bedroomsRef} className="relative">
-              <button
-                onClick={() => toggleDropdown("bedrooms")}
-                className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
-                  openDropDown === "bedrooms" && "bg-[#F3F3F3] rounded-md"
-                }`}
-              >
-                საძინებლების რაოდენობა{" "}
-                <span
-                  className={`${openDropDown === "bedrooms" && "rotate-180"}`}
+                <div
+                  className={`${
+                    openDropDown === "region" ? "block" : "hidden"
+                  } absolute top-12 -left-2 z-10 min-w-[731px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
                 >
-                  <DownArrow />
-                </span>
-              </button>
-              <div
-                className={`${
-                  openDropDown === "bedrooms" ? "block" : "hidden"
-                } absolute top-12 -left-2 z-10 w-[282px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
-              >
-                <h3>საძინებლების რაოდენობა</h3>
-                <ul className="flex justify-between text-[14px] leading-[17px] mt-6 mb-8">
-                  {bedroomsQuantity.map((room) => (
-                    <li key={`room${String(room)}`}>
-                      <button className="w-[41px] border border-[#808A93] rounded-md p-2.5">
-                        {room}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] rounded-lg px-3 py-2 ml-auto">
-                  არჩევა
+                  <h3 className="firago-medium">რეგიონის მიხედვით</h3>
+                  <ul className="grid grid-cols-3 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
+                    {regions?.map((region) => (
+                      <li key={region.name}>
+                        <label
+                          htmlFor={region.name.toString()}
+                          //onChange={() => handleServiceChange(service.id)}
+                          className="w-full flex items-center gap-2"
+                        >
+                          <input
+                            type="checkbox"
+                            name=""
+                            id={region.name.toString()}
+                          />
+                          {region.name}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                    არჩევა
+                  </button>
+                </div>
+              </div>
+
+              <div ref={priceRef} className="relative">
+                <button
+                  onClick={() => toggleDropdown("price")}
+                  //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
+                  className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
+                    openDropDown === "price" && "bg-[#F3F3F3] rounded-md"
+                  }`}
+                >
+                  საფასო კატეგორია{" "}
+                  <span
+                    className={`${openDropDown === "price" && "rotate-180"}`}
+                  >
+                    <DownArrow />
+                  </span>
                 </button>
+
+                <div
+                  className={`${
+                    openDropDown === "price" ? "block" : "hidden"
+                  } absolute top-12 -left-2 z-10 w-[382px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
+                >
+                  <h3 className="firago-medium mb-6">ფასის მიხედვით</h3>
+                  <div className="flex gap-[15px]">
+                    <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
+                      <input
+                        type="text"
+                        placeholder="დან"
+                        className="w-full outline-none"
+                      />
+                      ₾
+                    </div>
+                    <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
+                      <input
+                        type="text"
+                        placeholder="დან"
+                        className="w-full outline-none"
+                      />{" "}
+                      ₾
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
+                    <div>
+                      <h4 className="firago-medium mb-4">მინ. ფასი</h4>
+                      <ul className="space-y-2">
+                        {price.map((price) => (
+                          <li key={`min${String(price.price)}`}>
+                            {" "}
+                            {price.price} ₾
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="firago-medium mb-4">მაქს. ფასი</h4>
+                      <ul className="space-y-2">
+                        {price.map((price) => (
+                          <li key={`max${String(price.price)}`}>
+                            {" "}
+                            {price.price} ₾
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                    არჩევა
+                  </button>
+                </div>
+              </div>
+
+              <div ref={areaRef} className="relative">
+                <button
+                  onClick={() => toggleDropdown("area")}
+                  //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
+                  className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
+                    openDropDown === "area" && "bg-[#F3F3F3] rounded-md"
+                  }`}
+                >
+                  ფართობი{" "}
+                  <span
+                    className={`${openDropDown === "area" && "rotate-180"}`}
+                  >
+                    <DownArrow />
+                  </span>
+                </button>
+
+                <div
+                  className={`${
+                    openDropDown === "area" ? "block" : "hidden"
+                  } absolute top-12 -left-2 z-10 w-[382px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
+                >
+                  <h3 className="firago-medium mb-6">ფართობის მიხედვით</h3>
+                  <div className="flex gap-[15px]">
+                    <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
+                      <input
+                        type="text"
+                        placeholder="დან"
+                        className="w-full outline-none"
+                      />
+                      <span>მ&sup2;</span>
+                    </div>
+                    <div className="w-1/2 flex items-center border border-[#808A93] px-3 py-2.5 rounded-md">
+                      <input
+                        type="text"
+                        placeholder="დან"
+                        className="w-full outline-none"
+                      />{" "}
+                      <span>მ&sup2;</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-4 text-[14px] leading-[17px] mt-6 mb-8">
+                    <div>
+                      <h4 className="firago-medium mb-4">მინ. ფასი</h4>
+                      <ul className="space-y-2">
+                        {price.map((price) => (
+                          <li key={`minarea${String(price.price)}`}>
+                            {" "}
+                            {price.price} <span>მ&sup2;</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="firago-medium mb-4">მაქს. ფასი</h4>
+                      <ul className="space-y-2">
+                        {price.map((price) => (
+                          <li key={`maxarea${String(price.price)}`}>
+                            {" "}
+                            {price.price} <span>მ&sup2;</span>{" "}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                    არჩევა
+                  </button>
+                </div>
+              </div>
+
+              <div ref={bedroomsRef} className="relative">
+                <button
+                  onClick={() => toggleDropdown("bedrooms")}
+                  className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
+                    openDropDown === "bedrooms" && "bg-[#F3F3F3] rounded-md"
+                  }`}
+                >
+                  საძინებლების რაოდენობა{" "}
+                  <span
+                    className={`${openDropDown === "bedrooms" && "rotate-180"}`}
+                  >
+                    <DownArrow />
+                  </span>
+                </button>
+                <div
+                  className={`${
+                    openDropDown === "bedrooms" ? "block" : "hidden"
+                  } absolute top-12 -left-2 z-10 w-[282px] bg-white border border-[#DBDBDB] rounded-[10px] p-6 shadow-[_5px_5px_12px_0px_rgba(2,21,38,0.08)]`}
+                >
+                  <h3>საძინებლების რაოდენობა</h3>
+                  <ul className="flex justify-between text-[14px] leading-[17px] mt-6 mb-8">
+                    {bedroomsQuantity.map((room) => (
+                      <li key={`room${String(room)}`}>
+                        <button className="w-[41px] border border-[#808A93] rounded-md p-2.5">
+                          {room}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                    არჩევა
+                  </button>
+                </div>
               </div>
             </div>
-          </nav>
+            {/* selected values */}
+            <div className="flex items-center gap-2 text-[14px] leading-[17px] mt-4">
+              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
+                <span>თბილისი</span>{" "}
+                <IoIosClose size={16} className="shrink-0 " />
+              </button>
+              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
+                <p>
+                  <span>55 მ&sup2;</span> - <span>95 მ&sup2;</span>
+                </p>
+                <IoIosClose size={16} className="shrink-0 " />
+              </button>
+              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
+                <p>
+                  <span>20000₾ </span> - <span>100000₾</span>
+                </p>
+                <IoIosClose size={16} className="shrink-0 " />
+              </button>
+              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
+                <span>1</span>
+                <IoIosClose size={16} className="shrink-0 " />
+              </button>
+              <button className="firago-medium text-[#021526]">
+                გასუფთავება
+              </button>
+            </div>
+          </div>
+
           <div>
             <Link
               to={"/addListing"}
-              className="text-center items-center text-white hover:text-[#F93B1D] bg-[#F93B1D] hover:bg-white outline outline-1 hover:outline-[#F93B1D] rounded-[10px] px-4 py-[14px] mr-4"
+              className="text-center items-center text-white bg-[#F93B1D] hover:bg-[#DF3014] rounded-[10px] px-4 py-[14px] mr-4"
             >
               <span className="text-[22px]">+</span> ლისტინგის დამატება
             </Link>

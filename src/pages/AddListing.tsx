@@ -248,7 +248,19 @@ const AddListing = ({
             გარიგების ტიპი
           </h3>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="radio-item">
+              <input
+                type="radio"
+                id="ritema"
+                name="ritem"
+                value={0}
+                className="mr-2"
+                onChange={handleRentalChange}
+                checked={data.is_rental === 1}
+              />
+              <label htmlFor="ritema">ქირავდება</label>
+            </div>
+            {/* <div className="flex items-center">
               <input
                 value={0}
                 type="radio"
@@ -259,8 +271,20 @@ const AddListing = ({
                 checked={data.is_rental === 0}
               />
               <label htmlFor="sale">იყიდება</label>
+            </div> */}
+            <div className="radio-item">
+              <input
+                type="radio"
+                id="ritema"
+                name="ritem"
+                value={1}
+                className="mr-2"
+                onChange={handleRentalChange}
+                checked={data.is_rental === 1}
+              />
+              <label htmlFor="ritema">ქირავდება</label>
             </div>
-            <div>
+            {/* <div className="flex items-center">
               <input
                 value={1}
                 type="radio"
@@ -271,7 +295,7 @@ const AddListing = ({
                 checked={data.is_rental === 1}
               />
               <label htmlFor="rent">ქირავდება</label>
-            </div>
+            </div> */}
           </div>
         </div>
         {/*  */}
