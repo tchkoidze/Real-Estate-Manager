@@ -19,7 +19,6 @@ export const useRegions = () => {
           }
         );
         setRegions(response.data);
-        console.log(response.data);
       } catch (error) {
         setError("Error fetching regions");
       } finally {

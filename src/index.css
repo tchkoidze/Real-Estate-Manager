@@ -12,10 +12,6 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh; */
 }
 
 @media (prefers-color-scheme: light) {
@@ -56,8 +52,8 @@ body {
   }
   /* Hide scrollbar for IE, Edge and Firefox */
   .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
@@ -67,81 +63,8 @@ body {
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-/* .custom-radio:before {
-  content: " ";
-  display: inline-block;
-  position: absolute;
-  top: -1.8px;
-  left: -1.5px;
-
-  width: 17px;
-  height: 17px;
-  border-radius: 11px;
-  border: 1px solid #021526;
-  background-color: transparent;
-} */
-
-/* .custom-radio #rent:checked:after {
-  border-radius: 50%;
-  width: 7px;
-  height: 7px;
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  content: " ";
-  display: block;
-  background: #004c97;
-} */
-
-.radio-item {
-  display: inline-block;
-  position: relative;
-  padding: 0 6px;
-  margin: 10px 0 0;
-}
-
-.radio-item input[type="radio"] {
-  opacity: 0; /* Hide the default radio button */
-  position: absolute; /* Ensure it's not affecting layout */
-}
-
-.radio-item label {
-  color: #666;
-  font-weight: normal;
-  position: relative;
-  padding-left: 30px; /* Adjust space for custom radio button */
-}
-
-/* Custom radio button */
-.radio-item label::before {
-  content: " ";
-  display: inline-block;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  border: 1px solid #021526;
-  background-color: transparent;
-}
-
-/* Checked state */
-.radio-item input[type="radio"]:checked + label::after {
-  content: " ";
-  position: absolute;
-  top: 50%;
-  left: 5px;
-  transform: translateY(-50%);
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #021526;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 #sale {
@@ -174,7 +97,6 @@ input[type="checkbox"]:checked {
 }
 
 input[type="checkbox"]:checked::before {
-  /* content: "✓"; */
   content: url('data:image/svg+xml,<svg width="13" height="11" viewBox="0 0 13 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.4546 1.4541L4.57959 9.63592L1.45459 5.91691" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
   font-size: 16px;
   color: white;

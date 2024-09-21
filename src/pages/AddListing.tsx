@@ -30,6 +30,7 @@ const AddListing = ({
 }: {
   setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const [data, setData] = useState<AddProperty>(initialState);
   const [agents, setAgents] = useState<Agent[] | null>();
 
   const [cities, setCities] = useState<City[] | null>();
@@ -52,8 +53,6 @@ const AddListing = ({
     resolver: zodResolver(addListingSchema),
     mode: "onChange",
   });
-
-  const [data, setData] = useState<AddProperty>(initialState);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -90,7 +89,7 @@ const AddListing = ({
 
   useEffect(() => {
     getAgents();
-    // getRegions();
+
     getCities();
   }, []);
 
@@ -282,7 +281,7 @@ const AddListing = ({
     const value = Number(e.target.value); // Convert the string value '0' or '1' to a number
     setData((prevData) => ({
       ...prevData,
-      is_rental: value, // Directly set the value as either 0 or 1
+      is_rental: value,
     }));
   };
 
@@ -371,10 +370,7 @@ const AddListing = ({
                     : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  //color={errors.address ? "text-[#F93B1D]" : ""}
-                />
+                <IoIosCheckmark size={24} />
                 მინიმუმ ორი სიმბოლო
               </p>
             </div>
@@ -430,30 +426,12 @@ const AddListing = ({
                     <li key={region.id}>
                       <label
                         htmlFor={`${region.id}`}
-                        className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
+                        className="w-full block border-t border-[#808A93] px-2.5 py-3.5 cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="region"
                           id={`${region.id}`}
-                          // checked={filters.degree === degree}
-                          // onChange={() =>
-                          //   setData((prevData) => ({
-                          //     ...prevData,
-                          //     region: {
-                          //       name: region.name,
-                          //       region_id:
-                          //         prevData.region.region_id === region.id
-                          //           ? null
-                          //           : region.id,
-                          //     },
-                          //     city: {
-                          //       // Reset city values when region is changed
-                          //       name: "",
-                          //       city_id: null,
-                          //     },
-                          //   }))
-                          // }
                           onChange={() =>
                             handleRegionChange(region.id, region.name)
                           }
@@ -503,25 +481,12 @@ const AddListing = ({
                         <li key={city.name}>
                           <label
                             htmlFor={`${city.name}`}
-                            className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
+                            className="w-full block border-t border-[#808A93] px-2.5 py-3.5 cursor-pointer"
                           >
                             <input
                               type="radio"
                               name="city"
                               id={`${city.name}`}
-                              // checked={filters.degree === degree}
-                              // onChange={() =>
-                              //   setData((prevData) => ({
-                              //     ...prevData,
-                              //     city: {
-                              //       name: city.name,
-                              //       city_id:
-                              //         prevData.city.city_id === city.id
-                              //           ? null
-                              //           : city.id,
-                              //     },
-                              //   }))
-                              // }
                               onChange={() =>
                                 handleCityChange(city.id, city.name)
                               }
@@ -533,7 +498,7 @@ const AddListing = ({
                       ))}
                   </ul>
                 </div>
-                {/* Display error for city_id */}
+                {/* Display error for select city */}
                 {errors.city && (
                   <span className="text-red-500">მიუთითე ქალაქი</span>
                 )}
@@ -653,8 +618,7 @@ const AddListing = ({
             <div className="w-full">
               <p className="firago-medium">ატვირთეთ ფოტო *</p>
               <div className="w-full h-32 flex items-center justify-center outline-1 outline-dashed rounded-lg my-1">
-                <div //className="h-full flex items-center justify-center"
-                >
+                <div>
                   <input
                     type="file"
                     id="myphoto"
@@ -674,7 +638,6 @@ const AddListing = ({
                       />
                       <button
                         type="button"
-                        //onClick={() => setImageDataUri("")}
                         onClick={() =>
                           setData((prevData) => ({
                             ...prevData,
@@ -723,10 +686,9 @@ const AddListing = ({
               <button
                 type="button"
                 className={`w-full flex items-center justify-between border border-[#808A93] rounded-md p-2.5 ${
-                  openDropDown && "rounded-b-none"
+                  openDropDown === "agent" && "rounded-b-none"
                 }`}
                 onClick={() => toggleDropdown("agent")}
-                //onClick={() => setOpenDropDown(!openDropDown)}
               >
                 <span>
                   {data.agent.agent_id
@@ -737,7 +699,7 @@ const AddListing = ({
               </button>
               <div
                 className={`${
-                  openDropDown ? "block" : "hidden"
+                  openDropDown === "agent" ? "block" : "hidden"
                 } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
               >
                 <button
@@ -753,32 +715,15 @@ const AddListing = ({
                 </button>
                 <ul>
                   {agents?.map((agent) => (
-                    <li
-                      key={agent.id}
-                      // className="border-t border-[#808A93] px-2.5 py-3.5"
-                    >
+                    <li key={agent.id}>
                       <label
                         htmlFor={`${agent.id}`}
-                        className="block w-full border-t border-[#808A93] px-2.5 py-3.5"
+                        className="block w-full border-t border-[#808A93] px-2.5 py-3.5 cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="degree"
                           id={`${agent.id}`}
-                          // checked={filters.degree === degree}
-                          // onChange={() =>
-                          //   setData((prevData) => ({
-                          //     ...prevData,
-                          //     agent: {
-                          //       name: agent.name,
-                          //       surname: agent.surname,
-                          //       agent_id:
-                          //         prevData.agent.agent_id === agent.id
-                          //           ? null
-                          //           : agent.id,
-                          //     },
-                          //   }))
-                          // }
                           onChange={() =>
                             handleAgentChange(
                               agent.id,
