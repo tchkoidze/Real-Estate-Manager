@@ -1,50 +1,69 @@
-# React + TypeScript + Vite
+# Real estate manager - Client-Side Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository houses the client-side code for the real estate manager application, providing a user-friendly interface for users seeking for property.
 
-Currently, two official plugins are available:
+Technologies Used:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+    React: React + Vite  The foundation for building a dynamic and interactive user interface.
 
-## Expanding the ESLint configuration
+    Typescript: For handling user interactions and data manipulation.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+    Tailwind: For styling and visual presentation.
 
-- Configure the top-level `parserOptions` property like this:
+    CSS: For styling and visual presentation.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+    HTML: The underlying structure for the web pages.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Installation and Setup:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+    Clone the repository from the `main` branch:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+git clone https://github.com/tchkoidze/Real-Estate-Manager.git
+
+## Navigate to the project directory:
+
+cd "project directory"
+
+## Install dependencies:
+
+npm install
+
+## Start the development server:
+
+npm run dev
+
+This will typically launch the application at http://localhost:5173/.
+
+## Development Workflow:
+
+    Component-Based Architecture: Break down the UI into reusable components for better organization and maintainability.
+
+    Routing: Implement navigation between pages using React Router Dom (or a similar library).
+
+    Data Fetching: Fetch data from the backend API using  Axios for displaying dynamic content.
+
+    Form validation: React Hook form + zod.
+
+## Arcitecture
+
+- src:
+  - components:
+    -- AddAgent.tsx
+    -- Scroll.tsx
+    -- Tooltip.tsx
+  - data
+  - hooks
+  - icons
+  - layouts:
+    --Header
+  - pages:
+    -- Addlisting.tsx
+    -- Listing.tsx
+    -- PropertPage.tsx
+  - schemas:
+    --addAgentSchema
+    --AddListingSchema
+    --filtersSchema
+  - App.tsx
+  - main.tsx
+  - types.tsx
