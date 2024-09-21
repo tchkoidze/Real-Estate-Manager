@@ -35,7 +35,8 @@ const Listings = ({
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [regionselector, setRegionSelector] = useState<string[]>([]);
   const [filteredRealEstate, setFilteredRealEstate] = useState<Property[]>([]);
-  //const [error, setError] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const {
     openDropDown,
@@ -56,9 +57,32 @@ const Listings = ({
     );
   };
 
+  const {
+    priceSelector,
+    error,
+    priceValidError,
+    setPriceValidError,
+    handlePriceInput,
+    setPriceSelector,
+  } = usePriceInput();
+
+  const {
+    areaSelector,
+    areaError,
+    chekError,
+    setCheckError,
+    handleAreaInput,
+    setAreaSelector,
+  } = useAreaInput();
+
+  const { bedroomsSelector, setBedroomsSelector, handleBedroomsSelect } =
+    useBedroomsInput();
+
   // Fetch real estate data
   const fetchRealEstate = useCallback(async () => {
     const token = import.meta.env.VITE_API_TOKEN;
+    setLoading(true); // Set loading to true when the request starts
+    setFetchError(null);
     try {
       const response = await axios.get(
         "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
@@ -70,14 +94,17 @@ const Listings = ({
       // Apply filters if any are active
       filterRealEstate(response.data, initialFilters);
     } catch (error) {
+      setFetchError(`Error fetching listings- ${error}`);
       console.error("Error fetching listings:", error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchRealEstate();
   }, [fetchRealEstate]);
-  // Add a console log here to check if realEstate is populated
+
   useEffect(() => {
     console.log("Real Estate Data:", realEstate);
   }, [realEstate]);
@@ -98,16 +125,6 @@ const Listings = ({
         (property.area >= filters.area[0] && property.area <= filters.area[1]);
       const matchesBedrooms =
         filters.bedrooms === null || property.bedrooms === filters.bedrooms;
-
-      // Log each property and its match status
-      console.log("Property:", property);
-      console.log(
-        "Matches:",
-        matchesRegion,
-        matchesPrice,
-        matchesArea,
-        matchesBedrooms
-      );
 
       return matchesRegion && matchesPrice && matchesArea && matchesBedrooms;
     });
@@ -139,26 +156,13 @@ const Listings = ({
     localStorage.setItem("filtersData", JSON.stringify(filters));
   }, [filters]);
 
-  const {
-    priceSelector,
-    error,
-    priceValidError,
-    setPriceValidError,
-    handlePriceInput,
-    setPriceSelector,
-  } = usePriceInput();
+  if (loading) {
+    return <div className="firago-medium text-xl">იტვირთება მონაცემები...</div>;
+  }
 
-  const {
-    areaSelector,
-    areaError,
-    chekError,
-    setCheckError,
-    handleAreaInput,
-    setAreaSelector,
-  } = useAreaInput();
-
-  const { bedroomsSelector, setBedroomsSelector, handleBedroomsSelect } =
-    useBedroomsInput();
+  if (fetchError) {
+    return <div className="firago-medium text-xl">{fetchError}</div>;
+  }
 
   return (
     <main className="firago-regular">
@@ -200,7 +204,7 @@ const Listings = ({
                             name="region"
                             onChange={() => handleRegionSelect(region.name)}
                             checked={
-                              filters.region.includes(region.name) ||
+                              //filters.region.includes(region.name) ||
                               regionselector.includes(region.name)
                             }
                             id={region.name.toString()}
@@ -669,6 +673,7 @@ const Listings = ({
             </div>
           </div>
 
+          {/* button for add agent and list */}
           <div>
             <Link
               to={"/addListing"}
@@ -684,12 +689,16 @@ const Listings = ({
             </button>
           </div>
         </div>
+
+        {/* property cards */}
+
         <div className="max-w-[1596px] grid grid-cols-4 gap-5">
           {filteredRealEstate.length === 0 && (
             <p className="col-span-2 firago-medium text-[#F93B1D]">
               აღნიშნნული ფილტრით ინფორმაცია ვერ მოოიძებნა
             </p>
           )}
+
           {filteredRealEstate.map((property) => (
             <div
               key={property.id}

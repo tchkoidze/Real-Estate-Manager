@@ -1,23 +1,12 @@
 @import url("https://free.bboxtype.com/embedfonts/?family=FiraGO:400,500,700");
+@font-face {
+  font-family: "Helvetica-Neue";
+  src: url("../src/assets/fonts/HelveticaNeueBold.otf");
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale; */
-}
 
 body {
   margin: 0;
@@ -34,6 +23,12 @@ body {
     color: #213547;
     background-color: #ffffff;
   }
+}
+
+.helvetica {
+  font-family: "Helvetica-Neue", sans-serif;
+  font-weight: bold;
+  font-style: normal;
 }
 
 .firago-regular {
@@ -159,4 +154,31 @@ body {
   accent-color: #021526;
   width: 17px;
   height: 17px;
+}
+
+/* Customizing the checkbox appearance */
+input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+input[type="checkbox"]:checked::before {
+  /* content: "✓"; */
+  content: url('data:image/svg+xml,<svg width="13" height="11" viewBox="0 0 13 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.4546 1.4541L4.57959 9.63592L1.45459 5.91691" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  font-size: 16px;
+  color: white;
+  position: absolute;
+  top: -0px;
+  left: 3px;
 }

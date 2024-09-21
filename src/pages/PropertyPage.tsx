@@ -10,6 +10,8 @@ import Scroll from "../components/Scroll";
 const PropertPage = () => {
   const [property, setProperty] = useState<PropertyId | null>(null);
   const [openDeletion, setOpenDeletion] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,6 +19,8 @@ const PropertPage = () => {
   const getProperty = async (propertyId: string) => {
     const token = import.meta.env.VITE_API_TOKEN;
 
+    setLoading(true);
+    setFetchError(null);
     try {
       const response = await axios.get(
         `https://api.real-estate-manager.redberryinternship.ge/api/real-estates/${propertyId}`,
@@ -27,7 +31,10 @@ const PropertPage = () => {
       console.log(response.data);
       setProperty(response.data);
     } catch (error) {
-      console.error("Error fetching listings:", error);
+      console.error("Error fetching listing:", error);
+      setFetchError(`Error fetching listing- ${error}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,7 +51,6 @@ const PropertPage = () => {
 
       // Handle success
       if (response.status >= 200 && response.status < 300) {
-        alert("Successfully deleted!");
         navigate("/");
       }
     } catch (error) {
@@ -68,6 +74,15 @@ const PropertPage = () => {
       day: "2-digit",
     });
   };
+
+  if (loading) {
+    return <div className="firago-medium text-xl">იტვირთება მონაცემები...</div>;
+  }
+
+  if (fetchError) {
+    return <div className="firago-medium text-xl">{fetchError}</div>;
+  }
+
   return (
     <>
       <main className="flex flex-col items-center">

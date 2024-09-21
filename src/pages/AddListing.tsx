@@ -313,7 +313,7 @@ const AddListing = ({
         className="w-full space-y-20 pb-20"
       >
         <div className="w-[226px]">
-          <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-2  ">
+          <h3 className="helvetica text-base leading-[20px] text-[#1A1A1F] mb-2  ">
             გარიგების ტიპი
           </h3>
           <div className="flex items-center justify-between">
@@ -346,7 +346,7 @@ const AddListing = ({
         </div>
         {/*  */}
         <div>
-          <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-5">
+          <h3 className="helvetica text-base leading-[20px] text-[#1A1A1F] mb-5">
             მდებარეობა
           </h3>
           <div className="flex flex-wrap gap-5">
@@ -543,7 +543,7 @@ const AddListing = ({
         </div>
         {/*  */}
         <div>
-          <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-5">
+          <h3 className="helvetica text-base leading-[20px] text-[#1A1A1F] mb-5">
             ბინის დეტალები
           </h3>
           <div className="flex flex-wrap justify-between gap-y-5">
@@ -714,7 +714,7 @@ const AddListing = ({
         </div>
         {/*  */}
         <div>
-          <h3 className="firago-medium text-base leading-[20px] text-[#1A1A1F] mb-4">
+          <h3 className="helvetica text-base leading-[20px] text-[#1A1A1F] mb-4">
             აგენტი
           </h3>
           <div ref={agentRef} className="w-1/2">
