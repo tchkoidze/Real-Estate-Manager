@@ -144,7 +144,7 @@ const AddAgent = ({
         // Clear localStorage and reset form state
         localStorage.removeItem("addAgentData");
 
-        console.log(res);
+        setOpenAddAgent(false);
       }
       console.log(res);
     } catch (error) {
