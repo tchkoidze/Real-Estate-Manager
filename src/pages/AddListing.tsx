@@ -47,8 +47,11 @@ const AddListing = ({
     trigger,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<AddProperty>({ resolver: zodResolver(addListingSchema) });
+    formState: { errors, dirtyFields },
+  } = useForm<AddProperty>({
+    resolver: zodResolver(addListingSchema),
+    mode: "onChange",
+  });
 
   const [data, setData] = useState<AddProperty>(initialState);
 
@@ -361,12 +364,16 @@ const AddListing = ({
               />
               <p
                 className={`flex items-center ${
-                  errors.address ? "text-[#F93B1D]" : ""
+                  dirtyFields.address && errors.address
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.address
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
                 <IoIosCheckmark
                   size={24}
-                  color={errors.address ? "text-[#F93B1D]" : ""}
+                  //color={errors.address ? "text-[#F93B1D]" : ""}
                 />
                 მინიმუმ ორი სიმბოლო
               </p>
@@ -385,13 +392,14 @@ const AddListing = ({
               />
               <p
                 className={`flex items-center ${
-                  errors.zip_code ? "text-[#F93B1D]" : ""
+                  dirtyFields.zip_code && errors.zip_code
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.zip_code
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  color={errors.zip_code ? "text-[#F93B1D]" : ""}
-                />
+                <IoIosCheckmark size={24} />
                 მხოლოდ რიცხვები
               </p>
             </div>
@@ -553,13 +561,14 @@ const AddListing = ({
               />
               <p
                 className={`flex items-center ${
-                  errors.price ? "text-[#F93B1D]" : ""
+                  dirtyFields.price && errors.price
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.price
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  color={errors.price ? "text-[#F93B1D]" : ""}
-                />
+                <IoIosCheckmark size={24} />
                 მხოლოდ რიცხვები
               </p>
             </div>
@@ -578,14 +587,14 @@ const AddListing = ({
               />
               <p
                 className={`flex items-center ${
-                  errors.area ? "text-[#F93B1D]" : ""
+                  dirtyFields.area && errors.area
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.area
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  color={errors.area ? "text-[#F93B1D]" : ""}
-                />{" "}
-                მხოლოდ რიცხვები
+                <IoIosCheckmark size={24} /> მხოლოდ რიცხვები
               </p>
             </div>
 
@@ -604,14 +613,14 @@ const AddListing = ({
               />
               <p
                 className={`flex items-center ${
-                  errors.bedrooms ? "text-[#F93B1D]" : ""
+                  dirtyFields.bedrooms && errors.bedrooms
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.bedrooms
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  color={errors.bedrooms ? "text-[#F93B1D]" : ""}
-                />{" "}
-                მხოლოდ რიცხვები
+                <IoIosCheckmark size={24} /> მხოლოდ რიცხვები
               </p>
             </div>
 
@@ -630,14 +639,14 @@ const AddListing = ({
               ></textarea>
               <p
                 className={`flex items-center ${
-                  errors.description ? "text-[#F93B1D]" : ""
+                  dirtyFields.description && errors.description
+                    ? "text-[#F93B1D]"
+                    : dirtyFields.description
+                    ? "text-[#45A849]"
+                    : ""
                 }`}
               >
-                <IoIosCheckmark
-                  size={24}
-                  color={errors.description ? "text-[#F93B1D]" : ""}
-                />{" "}
-                მინიმუმ ხუთი სიტყვა
+                <IoIosCheckmark size={24} /> მინიმუმ ხუთი სიტყვა
               </p>
             </div>
 

@@ -27,8 +27,8 @@ const AddAgent = ({
     handleSubmit,
     setValue,
 
-    formState: { errors },
-  } = useForm({ resolver: zodResolver(addAgentSchema) });
+    formState: { errors, dirtyFields },
+  } = useForm({ resolver: zodResolver(addAgentSchema), mode: "onChange" });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -181,11 +181,24 @@ const AddAgent = ({
               })}
             />
             <p
-              className={`flex items-center gap-2 ${
-                errors.name && "text-[#F93B1D]"
+              className={`flex items-center ${
+                dirtyFields.name && errors.name
+                  ? "text-[#F93B1D]"
+                  : dirtyFields.name
+                  ? "text-[#45A849]"
+                  : ""
               }`}
             >
-              <IoIosCheckmark color={errors.name && "#F93B1D"} />
+              <IoIosCheckmark
+                size={24}
+                color={
+                  dirtyFields.name && errors.name
+                    ? "#F93B1D"
+                    : dirtyFields.name
+                    ? "#45A849"
+                    : ""
+                }
+              />
               მინიმუმ ორი სიმბოლო
             </p>
           </div>
@@ -202,11 +215,15 @@ const AddAgent = ({
               })}
             />
             <p
-              className={`flex items-center gap-2 ${
-                errors.surname && "text-[#F93B1D]"
+              className={`flex items-center ${
+                dirtyFields.surname && errors.surname
+                  ? "text-[#F93B1D]"
+                  : dirtyFields.surname
+                  ? "text-[#45A849]"
+                  : ""
               }`}
             >
-              <IoIosCheckmark color={errors.surname && "#F93B1D"} />
+              <IoIosCheckmark size={24} />
               მინიმუმ ორი სიმბოლო
             </p>
           </div>
@@ -223,13 +240,32 @@ const AddAgent = ({
               })}
             />
             <p
-              className={`flex items-center gap-2 ${
-                errors.email && "text-[#F93B1D]"
+              className={`flex items-center ${
+                dirtyFields.email && errors.email
+                  ? "text-[#F93B1D]"
+                  : dirtyFields.email
+                  ? "text-[#45A849]"
+                  : ""
               }`}
             >
-              <IoIosCheckmark color={errors.email && "#F93B1D"} />
-              გამოიყენეთ @redberry.ge ფოსტა
+              <IoIosCheckmark size={24} />
+              გამოიყენეთ @redberry.ge ფოსტა{" "}
             </p>
+            {typeof errors.email?.message === "string" && (
+              <p
+                className={`flex items-center ${
+                  errors.email?.message && "text-[#F93B1D]"
+                }`}
+              >
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.email?.message === "string" ? "#F93B1D" : ""}
+                />
+                {typeof errors.email?.message === "string"
+                  ? errors.email.message
+                  : ""}
+              </p>
+            )}
           </div>
           <div className="w-[48%] flex flex-col">
             <label htmlFor="phone" className="firago-medium">
@@ -244,11 +280,15 @@ const AddAgent = ({
               })}
             />
             <p
-              className={`flex items-center gap-2 ${
-                errors.phone && "text-[#F93B1D]"
+              className={`flex items-center ${
+                dirtyFields.phone && errors.phone
+                  ? "text-[#F93B1D]"
+                  : dirtyFields.phone && !errors.phone
+                  ? "text-[#45A849]"
+                  : ""
               }`}
             >
-              <IoIosCheckmark color={errors.phone && "#F93B1D"} />
+              <IoIosCheckmark size={24} />
               მხოლოდ რიცხვები
             </p>
           </div>

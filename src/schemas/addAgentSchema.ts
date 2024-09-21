@@ -3,7 +3,11 @@ import { z } from "zod";
 export const addAgentSchema = z.object({
   name: z.string().trim().min(2),
   surname: z.string().trim().min(2),
-  email: z.string().endsWith("@redberry.ge"),
+  email: z
+    .string()
+    .email("არასწორი მეილის ფორმატი")
+    .regex(/@redberry\.ge$/),
+  //endsWith("@redberry.ge"),
   phone: z
     .string()
     .length(9, "The number must be exactly 9 digits long.")
