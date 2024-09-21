@@ -5,7 +5,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { HiLocationMarker } from "react-icons/hi";
 import { BiEnvelope } from "react-icons/bi";
 import { PiPhoneCall } from "react-icons/pi";
-import { useGetAllRealestate } from "../hooks/useGetAllRealestate";
 import Scroll from "../components/Scroll";
 
 const PropertPage = () => {

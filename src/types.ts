@@ -83,8 +83,8 @@ export interface TooltipProps {
 }
 
 export type Filters = {
-  region: string[] | [];
-  price: [number, number] | [];
-  area: [number, number] | [];
+  region: string[];
+  price: [number, number] | null;
+  area: [number, number] | null;
   bedrooms: number | null;
 };

@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addListingSchema } from "../schemas/addListingSchema";
 import { useRegions } from "../hooks/useRegions";
 import { useClickOutsideDropdown } from "../hooks/useClickOutsideDropdown";
+import { useNavigate } from "react-router-dom";
 
 const initialState = {
   price: null,
@@ -29,12 +30,14 @@ const AddListing = ({
   setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [agents, setAgents] = useState<Agent[] | null>();
-  //const [openDropDown, setOpenDropDown] = useState<string | null>(null);
-  // const [openDropDown, setOpenDropDown] = useState(false);
-  // const [openRegions, setOpenRegions] = useState(false);
-  // const [openCities, setOpenCities] = useState(false);
+
   const [cities, setCities] = useState<City[] | null>();
-  //const [regions, setRegions] = useState<Region[] | null>();
+
+  const navigate = useNavigate();
+
+  const [imageUploadError, setImageUploadError] = useState("");
+
+  //const [selectedFile, setSelectedFile] = useState<File | null>();
 
   const { regions } = useRegions();
   const { openDropDown, toggleDropdown, regionRef, cityRef, agentRef } =
@@ -42,9 +45,9 @@ const AddListing = ({
 
   const {
     register,
+    trigger,
     handleSubmit,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm<AddProperty>({ resolver: zodResolver(addListingSchema) });
 
@@ -53,7 +56,7 @@ const AddListing = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const getAgents = async () => {
-    const token = "9cfde15a-548d-475d-ad3e-eb8aa3a94ec5";
+    const token = import.meta.env.VITE_API_TOKEN;
 
     try {
       const response = await axios.get(
@@ -102,17 +105,89 @@ const AddListing = ({
     getCities();
   }, []);
 
-  //const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  //<File | null>(null);
-  //const [imageDataUri, setImageDataUri] = useState<string>("");
+  const handleRegionChange = (region_id: number, region_name: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      region: { name: region_name, region_id },
+      city: { name: "", city_id: null }, // Reset city when region changes
+    }));
+
+    // Manually update the region in RHF's form state
+    setValue("region", { region_id, name: region_name });
+    // Trigger validation for region
+    trigger("region");
+  };
+
+  const handleCityChange = (city_id: number, city_name: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      city: { name: city_name, city_id },
+    }));
+
+    // Manually update the city in RHF's form state
+    setValue("city", { city_id, name: city_name });
+    // Trigger validation for city
+    trigger("city");
+  };
+
+  const handleAgentChange = (
+    agent_id: number,
+    agent_name: string,
+    agent_surname: string
+  ) => {
+    setData((prevData) => ({
+      ...prevData,
+      agent: {
+        name: agent_name,
+        surname: agent_surname,
+        agent_id: prevData.agent.agent_id === agent_id ? null : agent_id,
+      },
+    }));
+
+    // Manually update the agent in RHF's form state
+    setValue("agent", { agent_id, name: agent_name, surname: agent_surname });
+
+    // Trigger validation for agent
+    trigger("agent");
+  };
+
+  // Register the region field manually
+  useEffect(() => {
+    register("region", {
+      validate: {
+        required: (value) => value.region_id !== null || "Region is required",
+      },
+    });
+
+    register("city", {
+      validate: {
+        required: (value) => value.city_id !== null || "City is required",
+      },
+    });
+
+    register("city", {
+      validate: {
+        required: (value) => value.city_id !== null || "City is required",
+      },
+    });
+  }, [register]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Get the first selected file
+    console.log("file size ", file?.size);
+
     if (file) {
+      // Check if file size is less than 5MB (5 * 1024 * 1024 bytes)
+      if (file.size > 5 * 1024 * 1024) {
+        //alert("File size exceeds 5MB limit.");
+        setImageUploadError("სურათის ზომა არ უნდა აღემატებოდეს 5 მეგაბაიტს");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         localStorage.setItem("uploadedImage", reader.result as string);
-        //localStorage.setItem("uploadedImageName", file.name as string);
+
         //setImageDataUri(reader.result as string);
         handleInputChange("image", reader.result as string);
       };
@@ -141,6 +216,13 @@ const AddListing = ({
   }
 
   const onSubmit: SubmitHandler<AddProperty> = async () => {
+    console.log("data.area before submit:", data.image);
+    if (data.image === "") {
+      setImageUploadError("ატვირთე სურათი");
+      console.log("errored");
+      return;
+    }
+
     const file =
       typeof data.image === "string"
         ? dataURLtoFile(data.image, "property_image") || ""
@@ -176,30 +258,30 @@ const AddListing = ({
       data.agent.agent_id !== null ? data.agent.agent_id.toString() : ""
     );
 
-    // try {
-    //   const res = await axios.post(
-    //     "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
-    //     formData,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
-    //         "Content-Type": "multipart/form-data",
-    //       },
-    //     }
-    //   );
-    //   if (res.status === 201) {
-    //     console.log(res.data);
-    //     // Clear localStorage and reset form state
-    //     localStorage.removeItem("addListData");
-    //     //setData(initialState);
-    //     console.log(res);
-    //   }
-    //   console.log(res);
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+      const res = await axios.post(
+        "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (res.status === 201) {
+        console.log(res.data);
+        // Clear localStorage and reset form state
+        localStorage.removeItem("addListData");
+        //setData(initialState);
+        navigate("/");
+      }
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
 
-    //return console.log(777);
+    return console.log(777);
   };
 
   const handleInputChange = (fieldName: string, value: string) => {
@@ -234,6 +316,26 @@ const AddListing = ({
     localStorage.setItem("addListData", JSON.stringify(data));
   }, [data]);
 
+  // useEffect(() => {
+  //   const storedBase64File = localStorage.getItem("selectedFile");
+  //   const storedFileName = localStorage.getItem("fileName");
+  //   const storedFileType = localStorage.getItem("fileType");
+
+  //   if (storedBase64File && storedFileName && storedFileType) {
+  //     // Create a new File object using stored data
+  //     const file = new File([storedBase64File], storedFileName, {
+  //       type: storedFileType,
+  //     });
+
+  //     // Restore state
+  //     setSelectedFile(file);
+  //     // setData((prevData) => ({
+  //     //   ...prevData,
+  //     //   image: storedBase64File, // Rehydrate the base64 image for rendering
+  //     // }));
+  //   }
+  // }, []);
+
   return (
     <main className="w-[790px] flex flex-col firago-regular text-[14px] leading-[17px] mx-auto">
       <h1 className="firago-medium text-center text-[2rem] leading-9 my-16">
@@ -248,7 +350,7 @@ const AddListing = ({
             გარიგების ტიპი
           </h3>
           <div className="flex items-center justify-between">
-            <div className="radio-item">
+            {/* <div className="radio-item">
               <input
                 type="radio"
                 id="ritema"
@@ -259,8 +361,8 @@ const AddListing = ({
                 checked={data.is_rental === 1}
               />
               <label htmlFor="ritema">ქირავდება</label>
-            </div>
-            {/* <div className="flex items-center">
+            </div> */}
+            <div className="flex items-center">
               <input
                 value={0}
                 type="radio"
@@ -271,8 +373,8 @@ const AddListing = ({
                 checked={data.is_rental === 0}
               />
               <label htmlFor="sale">იყიდება</label>
-            </div> */}
-            <div className="radio-item">
+            </div>
+            {/* <div className="radio-item">
               <input
                 type="radio"
                 id="ritema"
@@ -283,8 +385,8 @@ const AddListing = ({
                 checked={data.is_rental === 1}
               />
               <label htmlFor="ritema">ქირავდება</label>
-            </div>
-            {/* <div className="flex items-center">
+            </div> */}
+            <div className="flex items-center">
               <input
                 value={1}
                 type="radio"
@@ -295,7 +397,7 @@ const AddListing = ({
                 checked={data.is_rental === 1}
               />
               <label htmlFor="rent">ქირავდება</label>
-            </div> */}
+            </div>
           </div>
         </div>
         {/*  */}
@@ -348,9 +450,7 @@ const AddListing = ({
             </div>
 
             <div className="w-[48%] flex flex-col">
-              <label htmlFor="" className="firago-medium">
-                რეგიონი
-              </label>
+              <p className="firago-medium">რეგიონი</p>
               <div ref={regionRef} className="relative my-1">
                 <button
                   type="button"
@@ -387,22 +487,25 @@ const AddListing = ({
                           name="region"
                           id={`${region.id}`}
                           // checked={filters.degree === degree}
+                          // onChange={() =>
+                          //   setData((prevData) => ({
+                          //     ...prevData,
+                          //     region: {
+                          //       name: region.name,
+                          //       region_id:
+                          //         prevData.region.region_id === region.id
+                          //           ? null
+                          //           : region.id,
+                          //     },
+                          //     city: {
+                          //       // Reset city values when region is changed
+                          //       name: "",
+                          //       city_id: null,
+                          //     },
+                          //   }))
+                          // }
                           onChange={() =>
-                            setData((prevData) => ({
-                              ...prevData,
-                              region: {
-                                name: region.name,
-                                region_id:
-                                  prevData.region.region_id === region.id
-                                    ? null
-                                    : region.id,
-                              },
-                              city: {
-                                // Reset city values when region is changed
-                                name: "",
-                                city_id: null,
-                              },
-                            }))
+                            handleRegionChange(region.id, region.name)
                           }
                           className="hidden"
                         />
@@ -412,13 +515,13 @@ const AddListing = ({
                   ))}
                 </ul>
               </div>
-              <p></p>
+              {errors.region && (
+                <span className="text-red-500">მიუთითე რეგიონი</span>
+              )}
             </div>
             {data.region.region_id !== null && (
               <div className="w-[48%] flex flex-col">
-                <label htmlFor="" className="firago-medium">
-                  ქალაქი
-                </label>
+                <p className="firago-medium">ქალაქი</p>
                 <div ref={cityRef} className="relative my-1">
                   <button
                     type="button"
@@ -460,17 +563,20 @@ const AddListing = ({
                               name="city"
                               id={`${city.name}`}
                               // checked={filters.degree === degree}
+                              // onChange={() =>
+                              //   setData((prevData) => ({
+                              //     ...prevData,
+                              //     city: {
+                              //       name: city.name,
+                              //       city_id:
+                              //         prevData.city.city_id === city.id
+                              //           ? null
+                              //           : city.id,
+                              //     },
+                              //   }))
+                              // }
                               onChange={() =>
-                                setData((prevData) => ({
-                                  ...prevData,
-                                  city: {
-                                    name: city.name,
-                                    city_id:
-                                      prevData.city.city_id === city.id
-                                        ? null
-                                        : city.id,
-                                  },
-                                }))
+                                handleCityChange(city.id, city.name)
                               }
                               className="hidden"
                             />
@@ -480,7 +586,10 @@ const AddListing = ({
                       ))}
                   </ul>
                 </div>
-                <p></p>
+                {/* Display error for city_id */}
+                {errors.city && (
+                  <span className="text-red-500">მიუთითე ქალაქი</span>
+                )}
               </div>
             )}
           </div>
@@ -586,7 +695,7 @@ const AddListing = ({
                     type="file"
                     id="myphoto"
                     accept=".jpg,.jpeg,.png"
-                    {...register("image", { required: true })}
+                    {...register("image")}
                     onChange={handleFileChange}
                     ref={fileInputRef}
                     className="hidden"
@@ -627,13 +736,15 @@ const AddListing = ({
                   )}
                 </div>
               </div>
-              <p
-                className={`flex items-center gap-2 ${
-                  errors.image ? "text-[#F93B1D]" : ""
-                }`}
-              >
-                <Check /> ატვირთე ფოტო
-              </p>
+              {imageUploadError.length > 0 && (
+                <p
+                  className={`flex items-center gap-2 ${
+                    imageUploadError.length > 0 ? "text-[#F93B1D]" : ""
+                  }`}
+                >
+                  <Check /> {imageUploadError}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -667,7 +778,10 @@ const AddListing = ({
               >
                 <button
                   type="button"
-                  onClick={() => setOpenAddAgent(true)}
+                  onClick={() => {
+                    setOpenAddAgent(true);
+                    toggleDropdown("agent");
+                  }}
                   className="w-full flex items-center gap-2 border-t border-[#808A93] px-2.5 py-2.5"
                 >
                   <img src="/plus-circle.svg" alt="plus image" />
@@ -688,18 +802,25 @@ const AddListing = ({
                           name="degree"
                           id={`${agent.id}`}
                           // checked={filters.degree === degree}
+                          // onChange={() =>
+                          //   setData((prevData) => ({
+                          //     ...prevData,
+                          //     agent: {
+                          //       name: agent.name,
+                          //       surname: agent.surname,
+                          //       agent_id:
+                          //         prevData.agent.agent_id === agent.id
+                          //           ? null
+                          //           : agent.id,
+                          //     },
+                          //   }))
+                          // }
                           onChange={() =>
-                            setData((prevData) => ({
-                              ...prevData,
-                              agent: {
-                                name: agent.name,
-                                surname: agent.surname,
-                                agent_id:
-                                  prevData.agent.agent_id === agent.id
-                                    ? null
-                                    : agent.id,
-                              },
-                            }))
+                            handleAgentChange(
+                              agent.id,
+                              agent.name,
+                              agent.surname
+                            )
                           }
                           className="hidden"
                         />
@@ -711,9 +832,14 @@ const AddListing = ({
               </div>
             </div>
           </div>
+          {errors.agent && <span className="text-red-500">მიუთითე აგენტი</span>}
         </div>
         <div className="flex justify-end gap-4">
           <button
+            onClick={() => {
+              localStorage.removeItem("addListData");
+              navigate("/");
+            }}
             type="button"
             className="text-[#F93B1D] hover:text-white border border-[#F93B1D] hover:bg-[#DF3014] rounded-[10px] px-4 py-[13px]"
           >

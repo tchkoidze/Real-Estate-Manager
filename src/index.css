@@ -148,3 +148,15 @@ body {
   border-radius: 50%;
   background: #021526;
 }
+
+#sale {
+  accent-color: #021526;
+  width: 17px;
+  height: 17px;
+}
+
+#rent {
+  accent-color: #021526;
+  width: 17px;
+  height: 17px;
+}

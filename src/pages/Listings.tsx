@@ -1,20 +1,25 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HiLocationMarker } from "react-icons/hi";
 import { Filters, Property } from "../types";
 import { Link } from "react-router-dom";
 import DownArrow from "../icons/ArrowDown";
 import { useRegions } from "../hooks/useRegions";
 import { useFilterOpen } from "../hooks/useFilterOpen";
-import { price } from "../data/filterData";
+import { price, area } from "../data/filterData";
 import Tooltip from "../components/Tooltip";
 import { IoIosClose } from "react-icons/io";
+import {
+  useAreaInput,
+  useBedroomsInput,
+  usePriceInput,
+} from "../hooks/useFilterInputsHandler";
 
 const bedroomsQuantity = [1, 2, 3, 4];
 const initialFilters: Filters = {
   region: [],
-  price: [],
-  area: [],
+  price: null,
+  area: null,
   bedrooms: null,
 };
 
@@ -28,6 +33,9 @@ const Listings = ({
   const { regions } = useRegions();
 
   const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [regionselector, setRegionSelector] = useState<string[]>([]);
+  const [filteredRealEstate, setFilteredRealEstate] = useState<Property[]>([]);
+  //const [error, setError] = useState("");
 
   const {
     openDropDown,
@@ -38,9 +46,41 @@ const Listings = ({
     bedroomsRef,
   } = useFilterOpen();
 
-  const getAllRealestate = async () => {
-    const token = import.meta.env.VITE_API_TOKEN;
+  // Handle region select
+  const handleRegionSelect = (region: string) => {
+    setRegionSelector(
+      (prevRegions) =>
+        prevRegions.includes(region)
+          ? prevRegions.filter((reg) => reg !== region) // Remove if already selected
+          : [...prevRegions, region] // Add if not selected
+    );
+  };
 
+  // const getAllRealestate = async () => {
+  //   const token = import.meta.env.VITE_API_TOKEN;
+
+  //   try {
+  //     const response = await axios.get(
+  //       "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     console.log(55);
+  //     console.log(response.data);
+  //     setRealEstate(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching listings:", error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   getAllRealestate();
+  // }, []);
+
+  // Fetch real estate data
+  const fetchRealEstate = useCallback(async () => {
+    const token = import.meta.env.VITE_API_TOKEN;
     try {
       const response = await axios.get(
         "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
@@ -48,22 +88,138 @@ const Listings = ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(55);
-      console.log(response.data);
       setRealEstate(response.data);
+      // Apply filters if any are active
+      filterRealEstate(response.data, initialFilters);
     } catch (error) {
       console.error("Error fetching listings:", error);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchRealEstate();
+  }, [fetchRealEstate]);
+  // Add a console log here to check if realEstate is populated
+  useEffect(() => {
+    console.log("Real Estate Data:", realEstate);
+  }, [realEstate]);
+
+  // Apply filters to the real estate data
+  const filterRealEstate = (data: Property[], filters: Filters) => {
+    console.log("Applying Filters:", filters); // Check filters being applied
+    const filteredData = data.filter((property: Property) => {
+      const matchesRegion =
+        filters.region.length === 0 ||
+        filters.region.includes(property.city.region.name);
+      const matchesPrice =
+        !filters.price ||
+        (property.price >= filters.price[0] &&
+          property.price <= filters.price[1]);
+      const matchesArea =
+        !filters.area ||
+        (property.area >= filters.area[0] && property.area <= filters.area[1]);
+      const matchesBedrooms =
+        filters.bedrooms === null || property.bedrooms === filters.bedrooms;
+
+      // Log each property and its match status
+      console.log("Property:", property);
+      console.log(
+        "Matches:",
+        matchesRegion,
+        matchesPrice,
+        matchesArea,
+        matchesBedrooms
+      );
+
+      return matchesRegion && matchesPrice && matchesArea && matchesBedrooms;
+    });
+    console.log("Filtered Data:", filteredData); // Check filtered data
+    setFilteredRealEstate(filteredData);
   };
 
   useEffect(() => {
-    getAllRealestate();
+    if (JSON.stringify(filters) !== JSON.stringify(initialFilters)) {
+      filterRealEstate(realEstate, filters);
+    } else {
+      setFilteredRealEstate(realEstate); // Show all data when filters are in initial state
+    }
+  }, [filters, realEstate]);
+
+  const storedFilters = JSON.parse(localStorage.getItem("filtersData")!);
+  useEffect(() => {
+    if (storedFilters) {
+      setFilters(storedFilters);
+      setPriceSelector(storedFilters.price || [0, 300000]);
+      setRegionSelector(storedFilters.region);
+      setAreaSelector(storedFilters.area || [0, 300]);
+      setBedroomsSelector(storedFilters.bedrooms || null);
+      console.log(storedFilters.bedrooms);
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("filtersData", JSON.stringify(filters));
+  }, [filters]);
+
+  // Handle text input change
+  // const handlePriceInput = (
+  //   e: React.ChangeEvent<HTMLInputElement>,
+  //   type: "min" | "max"
+  // ) => {
+  //   const value = e.target.value;
+
+  //   // Get current min and max values
+  //   const [min, max] = priceSelector || [0, 300000];
+
+  //   const newPriceSelector: [number, number] =
+  //     type === "min"
+  //       ? [parseFloat(value) || 0, max]
+  //       : [min, parseFloat(value) || 0];
+
+  //   // Validate input
+  //   const result = priceSchema.safeParse({
+  //     minPrice: newPriceSelector[0].toString(),
+  //     maxPrice: newPriceSelector[1].toString(),
+  //   });
+
+  //   if (!result.success) {
+  //     //   setError(result.error.errors[0].message);
+  //     const errorMessages = result.error.errors
+  //       .map((err) => err.message)
+  //       .join(", ");
+  //     setError(errorMessages);
+  //   } else {
+  //     setError("");
+  //     setPriceSelector(newPriceSelector);
+  //   }
+  // };
+  const {
+    priceSelector,
+    error,
+    priceValidError,
+    setPriceValidError,
+    handlePriceInput,
+    setPriceSelector,
+  } = usePriceInput();
+
+  const {
+    areaSelector,
+    areaError,
+    chekError,
+    setCheckError,
+    handleAreaInput,
+    setAreaSelector,
+  } = useAreaInput();
+
+  const { bedroomsSelector, setBedroomsSelector, handleBedroomsSelect } =
+    useBedroomsInput();
+
   return (
     <main className="firago-regular">
       <section className="flex flex-col items-center">
         <div className="w-[1596px] flex justify-between text-base leading-[19.2px] pt-[77px] pb-8">
-          {/* filter */}
+          {/* filter component */}
+
           <div>
             <div className="flex space-x-6 border border-[#DBDBDB] rounded-[10px] p-[6px]">
               <div ref={regionRef} className="relative">
@@ -91,12 +247,16 @@ const Listings = ({
                       <li key={region.name}>
                         <label
                           htmlFor={region.name.toString()}
-                          //onChange={() => handleServiceChange(service.id)}
                           className="w-full flex items-center gap-2"
                         >
                           <input
                             type="checkbox"
-                            name=""
+                            name="region"
+                            onChange={() => handleRegionSelect(region.name)}
+                            checked={
+                              filters.region.includes(region.name) ||
+                              regionselector.includes(region.name)
+                            }
                             id={region.name.toString()}
                           />
                           {region.name}
@@ -105,7 +265,16 @@ const Listings = ({
                     ))}
                   </ul>
 
-                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                  <button
+                    onClick={() => {
+                      setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        region: regionselector,
+                      }));
+                      toggleDropdown("region");
+                    }}
+                    className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto"
+                  >
                     არჩევა
                   </button>
                 </div>
@@ -114,7 +283,6 @@ const Listings = ({
               <div ref={priceRef} className="relative">
                 <button
                   onClick={() => toggleDropdown("price")}
-                  //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
                   className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
                     openDropDown === "price" && "bg-[#F3F3F3] rounded-md"
                   }`}
@@ -139,6 +307,19 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
+                        // defaultValue={
+                        //   // priceSelector !== null
+                        //   //   ? priceSelector[0]
+                        //   //   : ""
+                        // }
+                        value={
+                          priceSelector !== null && priceSelector[0] !== null
+                            ? priceSelector[0]
+                            : filters.price && filters.price[0]
+                            ? filters.price[0]
+                            : ""
+                        }
+                        onChange={(e) => handlePriceInput(e, "min")}
                       />
                       ₾
                     </div>
@@ -147,6 +328,17 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
+                        // defaultValue={
+                        //   priceSelector !== null ? priceSelector[1] : ""
+                        // }
+                        value={
+                          priceSelector !== null && priceSelector[1] !== null
+                            ? priceSelector[1]
+                            : filters.price && filters.price[1]
+                            ? filters.price[1]
+                            : ""
+                        }
+                        onChange={(e) => handlePriceInput(e, "max")}
                       />{" "}
                       ₾
                     </div>
@@ -157,8 +349,21 @@ const Listings = ({
                       <ul className="space-y-2">
                         {price.map((price) => (
                           <li key={`min${String(price.price)}`}>
-                            {" "}
-                            {price.price} ₾
+                            <label htmlFor={`minPrice${price.price}`}>
+                              {price.price} ₾
+                              <input
+                                type="radio"
+                                id={`minPrice${price.price}`}
+                                onClick={() =>
+                                  setPriceSelector((prevPrice) =>
+                                    prevPrice
+                                      ? [price.price, prevPrice[1]]
+                                      : [price.price, 300000]
+                                  )
+                                }
+                                className="hidden"
+                              />
+                            </label>
                           </li>
                         ))}
                       </ul>
@@ -168,15 +373,58 @@ const Listings = ({
                       <ul className="space-y-2">
                         {price.map((price) => (
                           <li key={`max${String(price.price)}`}>
-                            {" "}
-                            {price.price} ₾
+                            <label htmlFor={`maxPrice${price.price}`}>
+                              {price.price} ₾
+                              <input
+                                type="radio"
+                                id={`maxPrice${price.price}`}
+                                onClick={() =>
+                                  setPriceSelector((prevPrice) =>
+                                    prevPrice
+                                      ? [prevPrice[0], price.price]
+                                      : [0, price.price]
+                                  )
+                                }
+                                className="hidden"
+                              />
+                            </label>
                           </li>
                         ))}
                       </ul>
                     </div>
                   </div>
 
-                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                  <p className="text-red-400">
+                    {error}
+                    {priceValidError}
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      if (priceSelector?.[0] === priceSelector?.[1]) {
+                        setPriceValidError(
+                          "მინ და მაქს მნიშვნელობა არ უნდა იყოს ტოლი"
+                        );
+                        return;
+                      } else if (
+                        priceSelector &&
+                        priceSelector?.[0] > priceSelector?.[1]
+                      ) {
+                        setPriceValidError(
+                          "მინ მნიშვნელობა არ უნდა იყოს მეტი მაქს მნიშვნელობაზე"
+                        );
+                        return;
+                      } else {
+                        setPriceValidError("");
+                      }
+                      setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        price: priceSelector,
+                      }));
+                      toggleDropdown("price");
+                    }}
+                    className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto"
+                  >
                     არჩევა
                   </button>
                 </div>
@@ -185,7 +433,6 @@ const Listings = ({
               <div ref={areaRef} className="relative">
                 <button
                   onClick={() => toggleDropdown("area")}
-                  //className="flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2"
                   className={`flex items-center gap-1 firago-medium text-[#021526] px-[14px] py-2 ${
                     openDropDown === "area" && "bg-[#F3F3F3] rounded-md"
                   }`}
@@ -210,6 +457,17 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
+                        value={
+                          // areaSelector !== null && areaSelector[0] !== null
+                          //   ? areaSelector[0]
+                          //   : filters.area && filters.area[0]
+                          //   ? filters.area[0]
+                          //   : ""
+                          areaSelector !== null && areaSelector[0] !== null
+                            ? areaSelector[0]
+                            : ""
+                        }
+                        onChange={(e) => handleAreaInput(e, "min")}
                       />
                       <span>მ&sup2;</span>
                     </div>
@@ -218,6 +476,12 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
+                        value={
+                          areaSelector !== null && areaSelector[1] !== null
+                            ? areaSelector[1]
+                            : ""
+                        }
+                        onChange={(e) => handleAreaInput(e, "max")}
                       />{" "}
                       <span>მ&sup2;</span>
                     </div>
@@ -226,10 +490,23 @@ const Listings = ({
                     <div>
                       <h4 className="firago-medium mb-4">მინ. ფასი</h4>
                       <ul className="space-y-2">
-                        {price.map((price) => (
-                          <li key={`minarea${String(price.price)}`}>
-                            {" "}
-                            {price.price} <span>მ&sup2;</span>
+                        {area.map((area) => (
+                          <li key={`minarea${String(area.area)}`}>
+                            <label htmlFor={`minArea${area.area}`}>
+                              {area.area} <span>მ&sup2;</span>
+                              <input
+                                type="radio"
+                                id={`minArea${area.area}`}
+                                onClick={() =>
+                                  setAreaSelector((prevArea) =>
+                                    prevArea
+                                      ? [area.area, prevArea[1]]
+                                      : [area.area, 300]
+                                  )
+                                }
+                                className="hidden"
+                              />
+                            </label>
                           </li>
                         ))}
                       </ul>
@@ -237,17 +514,57 @@ const Listings = ({
                     <div>
                       <h4 className="firago-medium mb-4">მაქს. ფასი</h4>
                       <ul className="space-y-2">
-                        {price.map((price) => (
-                          <li key={`maxarea${String(price.price)}`}>
-                            {" "}
-                            {price.price} <span>მ&sup2;</span>{" "}
+                        {area.map((area) => (
+                          <li key={`maxarea${String(area.area)}`}>
+                            <label htmlFor={`maxArea${area.area}`}>
+                              {area.area} <span>მ&sup2;</span>{" "}
+                              <input
+                                type="radio"
+                                id={`maxArea${area.area}`}
+                                onClick={() =>
+                                  setAreaSelector((prevArea) =>
+                                    prevArea
+                                      ? [prevArea[0], area.area]
+                                      : [0, area.area]
+                                  )
+                                }
+                                className="hidden"
+                              />
+                            </label>
                           </li>
                         ))}
                       </ul>
                     </div>
                   </div>
-
-                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                  <p className="text-red-400">
+                    {areaError} {chekError}
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (areaSelector?.[0] === areaSelector?.[1]) {
+                        setCheckError(
+                          "მინ და მაქს მნიშვნელობა არ უნდა იყოს ტოლი"
+                        );
+                        return;
+                      } else if (
+                        areaSelector &&
+                        areaSelector?.[0] > areaSelector?.[1]
+                      ) {
+                        setCheckError(
+                          "მინ მნიშვნელობა არ უნდა იყოს მეტი მაქს მნიშვნელობაზე"
+                        );
+                        return;
+                      } else {
+                        setCheckError("");
+                      }
+                      setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        area: areaSelector,
+                      }));
+                      toggleDropdown("area");
+                    }}
+                    className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto"
+                  >
                     არჩევა
                   </button>
                 </div>
@@ -275,44 +592,142 @@ const Listings = ({
                   <h3>საძინებლების რაოდენობა</h3>
                   <ul className="flex justify-between text-[14px] leading-[17px] mt-6 mb-8">
                     {bedroomsQuantity.map((room) => (
-                      <li key={`room${String(room)}`}>
-                        <button className="w-[41px] border border-[#808A93] rounded-md p-2.5">
+                      <li key={`room${String(room)}`} className="block">
+                        <label
+                          htmlFor={`room${String(room)}`}
+                          className={`flex items-center justify-center w-[41px] border border-[#808A93] rounded-md p-2.5 ${
+                            bedroomsSelector === room &&
+                            "bg-[#808A93] text-white"
+                          }`}
+                        >
                           {room}
-                        </button>
+                          <input
+                            type="radio"
+                            id={`room${String(room)}`}
+                            onChange={() =>
+                              // setFilters((prevFilters) => ({
+                              //   ...prevFilters,
+                              //   bedrooms: room,
+                              // }))
+                              handleBedroomsSelect(room)
+                            }
+                            checked={bedroomsSelector === room}
+                            className="hidden"
+                          />
+                        </label>
                       </li>
                     ))}
                   </ul>
-                  <button className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto">
+                  <button
+                    onClick={() => {
+                      setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        bedrooms: bedroomsSelector,
+                      }));
+                      toggleDropdown("bedrooms");
+                    }}
+                    className="block firago-medium text-[14px] text-white leading-[17px] bg-[#F93B1D] hover:bg-[#DF3014] focus:bg-[#DF3014] rounded-lg px-3 py-2 ml-auto"
+                  >
                     არჩევა
                   </button>
                 </div>
               </div>
             </div>
             {/* selected values */}
+
             <div className="flex items-center gap-2 text-[14px] leading-[17px] mt-4">
-              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
-                <span>თბილისი</span>{" "}
-                <IoIosClose size={16} className="shrink-0 " />
-              </button>
-              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
-                <p>
-                  <span>55 მ&sup2;</span> - <span>95 მ&sup2;</span>
-                </p>
-                <IoIosClose size={16} className="shrink-0 " />
-              </button>
-              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
-                <p>
-                  <span>20000₾ </span> - <span>100000₾</span>
-                </p>
-                <IoIosClose size={16} className="shrink-0 " />
-              </button>
-              <button className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]">
-                <span>1</span>
-                <IoIosClose size={16} className="shrink-0 " />
-              </button>
-              <button className="firago-medium text-[#021526]">
-                გასუფთავება
-              </button>
+              <ul className="flex flex-wrap gap-2">
+                {filters.region.map((region, index) => (
+                  <li key={index}>
+                    <button
+                      onClick={() => {
+                        setFilters((prevFilters) => ({
+                          ...prevFilters,
+                          region: prevFilters.region.filter(
+                            (r) => r !== region
+                          ),
+                        }));
+                        setRegionSelector([]);
+                      }}
+                      className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]"
+                    >
+                      <span>{region}</span>
+                      <IoIosClose size={16} className="shrink-0 " />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {filters.price &&
+                filters.price[0] >= 0 &&
+                filters.price[1] >= 0 && (
+                  <button
+                    onClick={() => {
+                      setFilters((prevFilters) => ({
+                        ...prevFilters,
+                        price: null,
+                      }));
+                      setPriceSelector(null);
+                    }}
+                    className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]"
+                  >
+                    <p>
+                      <span> {filters.price[0]}₾ </span> -{" "}
+                      <span>{filters.price[1]}₾</span>
+                    </p>
+                    <IoIosClose size={16} className="shrink-0 " />
+                  </button>
+                )}
+              {filters.area && filters.area[0] >= 0 && filters.area[1] >= 0 && (
+                <button
+                  onClick={() => {
+                    setFilters((prevFilters) => ({
+                      ...prevFilters,
+                      area: null,
+                    }));
+                    setAreaSelector(null);
+                  }}
+                  className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]"
+                >
+                  <p>
+                    <span>{filters.area[0]} მ&sup2;</span> -{" "}
+                    <span>{filters.area[1]} მ&sup2;</span>
+                  </p>
+                  <IoIosClose size={16} className="shrink-0 " />
+                </button>
+              )}
+
+              {filters.bedrooms && (
+                <button
+                  onClick={() => {
+                    setFilters((prevFilters) => ({
+                      ...prevFilters,
+                      bedrooms: null,
+                    }));
+                    setBedroomsSelector(null);
+                  }}
+                  className="flex items-center gap-1 text-[#021526CC] px-2.5 py-[6px] border border-[#DBDBDB] rounded-[43px]"
+                >
+                  <span>{filters.bedrooms}</span>
+                  <IoIosClose size={16} className="shrink-0 " />
+                </button>
+              )}
+
+              {(filters.region.length > 0 ||
+                (filters.price &&
+                  filters.price[0] >= 0 &&
+                  filters.price[1] >= 0) ||
+                filters.bedrooms !== null ||
+                //(filters.area[0] > 0 && filters.area[1] > 0))
+                (filters.area &&
+                  filters.area[0] >= 0 &&
+                  filters.area[1] >= 0)) && (
+                <button
+                  onClick={() => setFilters(initialFilters)}
+                  className="firago-medium text-[#021526]"
+                >
+                  გასუფთავება
+                </button>
+              )}
             </div>
           </div>
 
@@ -332,7 +747,12 @@ const Listings = ({
           </div>
         </div>
         <div className="max-w-[1596px] grid grid-cols-4 gap-5">
-          {realEstate.map((property) => (
+          {filteredRealEstate.length === 0 && (
+            <p className="col-span-2 firago-medium text-[#F93B1D]">
+              აღნიშნნული ფილტრით ინფორმაცია ვერ მოოიძებნა
+            </p>
+          )}
+          {filteredRealEstate.map((property) => (
             <div
               key={property.id}
               className="relative max-w-[384px] rounded-[14px] shadow[_5px_5px_12px_0px_rgba(2,21,38,0.08)]"

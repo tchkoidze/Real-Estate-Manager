@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Check from "../icons/check";
+import { IoIosCheckmark } from "react-icons/io";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addAgentSchema } from "../schemas/addAgentSchema";
@@ -20,6 +21,7 @@ const AddAgent = ({
   setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [agentData, setAgentData] = useState<AddAgentData>(initialAgentData);
+  const [imageUploadError, setImageUploadError] = useState("");
 
   const {
     register,
@@ -52,6 +54,13 @@ const AddAgent = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Get the first selected file
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        //alert("File size exceeds 5MB limit.");
+        setImageUploadError("სურათის ზომა არ უნდა აღემატებოდეს 5 მეგაბაიტს");
+        return;
+      } else {
+        setImageUploadError("");
+      }
       console.log("File selected:", file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -98,8 +107,11 @@ const AddAgent = ({
 
   const onSubmit = async () => {
     if (!agentData.avatar) {
+      setImageUploadError("ატვირთე სურათი");
       console.log("error");
       return;
+    } else {
+      setImageUploadError("");
     }
 
     const file =
@@ -175,7 +187,7 @@ const AddAgent = ({
                 errors.name && "text-[#F93B1D]"
               }`}
             >
-              <Check />
+              <IoIosCheckmark color={errors.name && "#F93B1D"} />
               მინიმუმ ორი სიმბოლო
             </p>
           </div>
@@ -196,7 +208,7 @@ const AddAgent = ({
                 errors.surname && "text-[#F93B1D]"
               }`}
             >
-              <Check />
+              <IoIosCheckmark color={errors.surname && "#F93B1D"} />
               მინიმუმ ორი სიმბოლო
             </p>
           </div>
@@ -217,7 +229,7 @@ const AddAgent = ({
                 errors.email && "text-[#F93B1D]"
               }`}
             >
-              <Check />
+              <IoIosCheckmark color={errors.email && "#F93B1D"} />
               გამოიყენეთ @redberry.ge ფოსტა
             </p>
           </div>
@@ -238,7 +250,7 @@ const AddAgent = ({
                 errors.phone && "text-[#F93B1D]"
               }`}
             >
-              <Check />
+              <IoIosCheckmark color={errors.phone && "#F93B1D"} />
               მხოლოდ რიცხვები
             </p>
           </div>
@@ -256,7 +268,7 @@ const AddAgent = ({
                   //{...register(name, { required: true })}
                   onChange={handleFileChange}
                   ref={fileInputRef}
-                  //className="hidden"
+                  className="hidden"
                 />
                 {/* <button
                   type="button"
@@ -299,12 +311,18 @@ const AddAgent = ({
                 )}
               </div>
             </div>
-            <p className={`${errors.avatar ? "text-[#F93B1D]" : ""}`}>
-              ატვირთეთ ფოტო{" "}
-              {typeof errors.avatar?.message === "string"
-                ? errors.avatar.message
-                : ""}
-            </p>
+            {imageUploadError.length > 0 && (
+              <p
+                className={`flex items-center gap-2 ${
+                  imageUploadError.length > 0 ? "text-[#F93B1D]" : ""
+                }`}
+              >
+                <IoIosCheckmark
+                  color={imageUploadError.length > 0 ? "#F93B1D" : undefined}
+                />
+                {imageUploadError}
+              </p>
+            )}
           </div>
         </div>
 

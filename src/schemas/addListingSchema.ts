@@ -41,4 +41,50 @@ export const addListingSchema = z.object({
     return NaN; // Return NaN if non-numeric characters are found
   }, z.number().int().min(1)),
   description: z.string().trim().min(5),
+  region: z.object({
+    region_id: z.number().nullable(),
+    name: z.string().min(1, "მიუთითე რეგიონი"),
+  }),
+  city: z.object({
+    city_id: z.number().nullable(),
+    name: z.string().min(1, "მიუთითე რეგიონი"),
+  }),
+  agent: z.object({
+    agent_id: z.number().nullable(),
+    name: z.string().min(1, "Agent name is required"),
+    surname: z.string().min(1, "Agent surname is required"),
+  }),
+  // image:
+  // image: z
+  //   .any() // Accept any type
+  //   .refine((file) => file instanceof File, {
+  //     message: "Image is required", // Ensure the value is a File object
+  //   })
+  //   .refine((file) => file.size <= 5 * 1024 * 1024, {
+  //     message: "File size should be less than 5MB", // Ensure size is valid
+  //   })
+  //   .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
+  //     message: "Only JPEG and PNG images are allowed", // Ensure file type is valid
+  //   }),
+  // z
+  //   .instanceof(File, { message: "Image is required" }) // Expect a File object
+  //   .refine((file) => file.size <= 5 * 1024 * 1024, {
+  //     message: "File size should be less than 5MB",
+  //   })
+  //   .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
+  //     message: "Only JPEG and PNG images are allowed",
+  //   }),
 });
+
+// .refine(
+//   (image) => {
+//     // Validate if image is less than 5MB
+//     const fileSize = localStorage.getItem("uploadedImage")?.length || 0;
+//     return fileSize <= 5 * 1024 * 1024; // Check size in base64 encoding
+//   },
+//   { message: "Image must be less than 5MB" }
+// ),
+
+// .refine((id) => id !== null, {
+//   message: "Agent is required",
+// })
