@@ -27,8 +27,12 @@ const initialState = {
 
 const AddListing = ({
   setOpenAddAgent,
+  agentAdded,
+  setAgentAdded,
 }: {
   setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
+  agentAdded: boolean;
+  setAgentAdded: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [data, setData] = useState<AddProperty>(initialState);
   const [agents, setAgents] = useState<Agent[] | null>();
@@ -92,6 +96,13 @@ const AddListing = ({
 
     getCities();
   }, []);
+
+  useEffect(() => {
+    if (agentAdded) {
+      getAgents();
+      setAgentAdded(false);
+    }
+  }, [agentAdded]);
 
   const handleRegionChange = (region_id: number, region_name: string) => {
     setData((prevData) => ({

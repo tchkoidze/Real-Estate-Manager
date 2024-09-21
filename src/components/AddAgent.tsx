@@ -16,8 +16,10 @@ const initialAgentData = {
 
 const AddAgent = ({
   setOpenAddAgent,
+  setAgentAdded,
 }: {
   setOpenAddAgent: React.Dispatch<React.SetStateAction<boolean>>;
+  setAgentAdded: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [agentData, setAgentData] = useState<AddAgentData>(initialAgentData);
   const [imageUploadError, setImageUploadError] = useState("");
@@ -143,7 +145,7 @@ const AddAgent = ({
         setAgentData(initialAgentData);
         // Clear localStorage and reset form state
         localStorage.removeItem("addAgentData");
-
+        setAgentAdded(true);
         setOpenAddAgent(false);
       }
       console.log(res);
