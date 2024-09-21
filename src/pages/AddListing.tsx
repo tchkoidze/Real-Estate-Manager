@@ -1,6 +1,7 @@
 import axios from "axios";
 import DownArrow from "../icons/ArrowDown";
 import Check from "../icons/check";
+import { IoIosCheckmark } from "react-icons/io";
 import { useEffect, useRef, useState } from "react";
 import { AddProperty, Agent, City } from "../types";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -36,8 +37,6 @@ const AddListing = ({
   const navigate = useNavigate();
 
   const [imageUploadError, setImageUploadError] = useState("");
-
-  //const [selectedFile, setSelectedFile] = useState<File | null>();
 
   const { regions } = useRegions();
   const { openDropDown, toggleDropdown, regionRef, cityRef, agentRef } =
@@ -85,19 +84,6 @@ const AddListing = ({
       console.error("Error fetching listings:", error);
     }
   };
-
-  // const getRegions = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       "https://api.real-estate-manager.redberryinternship.ge/api/regions"
-  //     );
-  //     console.log(55);
-  //     console.log("regions", response.data);
-  //     setRegions(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching listings:", error);
-  //   }
-  // };
 
   useEffect(() => {
     getAgents();
@@ -173,7 +159,7 @@ const AddListing = ({
   }, [register]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; // Get the first selected file
+    const file = event.target.files?.[0];
     console.log("file size ", file?.size);
 
     if (file) {
@@ -193,8 +179,6 @@ const AddListing = ({
       };
       reader.readAsDataURL(file);
 
-      //setSelectedFile(reader.result as string); // Save the file to state
-      // You can now process the file (e.g., upload it to a server or display a preview)
       console.log("Selected file:", file);
     }
   };
@@ -316,26 +300,6 @@ const AddListing = ({
     localStorage.setItem("addListData", JSON.stringify(data));
   }, [data]);
 
-  // useEffect(() => {
-  //   const storedBase64File = localStorage.getItem("selectedFile");
-  //   const storedFileName = localStorage.getItem("fileName");
-  //   const storedFileType = localStorage.getItem("fileType");
-
-  //   if (storedBase64File && storedFileName && storedFileType) {
-  //     // Create a new File object using stored data
-  //     const file = new File([storedBase64File], storedFileName, {
-  //       type: storedFileType,
-  //     });
-
-  //     // Restore state
-  //     setSelectedFile(file);
-  //     // setData((prevData) => ({
-  //     //   ...prevData,
-  //     //   image: storedBase64File, // Rehydrate the base64 image for rendering
-  //     // }));
-  //   }
-  // }, []);
-
   return (
     <main className="w-[790px] flex flex-col firago-regular text-[14px] leading-[17px] mx-auto">
       <h1 className="firago-medium text-center text-[2rem] leading-9 my-16">
@@ -350,18 +314,6 @@ const AddListing = ({
             გარიგების ტიპი
           </h3>
           <div className="flex items-center justify-between">
-            {/* <div className="radio-item">
-              <input
-                type="radio"
-                id="ritema"
-                name="ritem"
-                value={0}
-                className="mr-2"
-                onChange={handleRentalChange}
-                checked={data.is_rental === 1}
-              />
-              <label htmlFor="ritema">ქირავდება</label>
-            </div> */}
             <div className="flex items-center">
               <input
                 value={0}
@@ -374,18 +326,7 @@ const AddListing = ({
               />
               <label htmlFor="sale">იყიდება</label>
             </div>
-            {/* <div className="radio-item">
-              <input
-                type="radio"
-                id="ritema"
-                name="ritem"
-                value={1}
-                className="mr-2"
-                onChange={handleRentalChange}
-                checked={data.is_rental === 1}
-              />
-              <label htmlFor="ritema">ქირავდება</label>
-            </div> */}
+
             <div className="flex items-center">
               <input
                 value={1}
@@ -419,11 +360,14 @@ const AddListing = ({
                 })}
               />
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.address ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check />
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.address ? "text-[#F93B1D]" : ""}
+                />
                 მინიმუმ ორი სიმბოლო
               </p>
             </div>
@@ -440,11 +384,14 @@ const AddListing = ({
                 })}
               />
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.zip_code ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check />
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.zip_code ? "text-[#F93B1D]" : ""}
+                />
                 მხოლოდ რიცხვები
               </p>
             </div>
@@ -455,10 +402,8 @@ const AddListing = ({
                 <button
                   type="button"
                   className={`w-full flex items-center justify-between border border-[#808A93] rounded-md ${
-                    //openRegions ? "rounded-b-none" : ""
                     openDropDown === "region" ? "rounded-b-none" : ""
                   } p-2.5`}
-                  //onClick={() => setOpenRegions(!openRegions)}
                   onClick={() => toggleDropdown("region")}
                 >
                   <span>
@@ -470,14 +415,11 @@ const AddListing = ({
                 </button>
                 <ul
                   className={`${
-                    //openRegions ? "block" : "hidden"
                     openDropDown === "region" ? "block" : "hidden"
                   } w-full max-h-[184px] overflow-y-auto absolute z-10 bg-white border-x border-[#808A93] border-b rounded-b-md no-scrollbar`}
                 >
                   {regions?.map((region) => (
-                    <li
-                      key={region.id} //className="border-t border-[#808A93] px-2.5 py-3.5"
-                    >
+                    <li key={region.id}>
                       <label
                         htmlFor={`${region.id}`}
                         className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
@@ -550,10 +492,7 @@ const AddListing = ({
                         (city) => city.region_id === data.region.region_id
                       )
                       .map((city) => (
-                        <li
-                          key={city.name}
-                          // className="border-t border-[#808A93] px-2.5 py-3.5"
-                        >
+                        <li key={city.name}>
                           <label
                             htmlFor={`${city.name}`}
                             className="w-full block border-t border-[#808A93] px-2.5 py-3.5"
@@ -613,11 +552,15 @@ const AddListing = ({
                 })}
               />
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.price ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check /> მხოლოდ რიცხვები
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.price ? "text-[#F93B1D]" : ""}
+                />
+                მხოლოდ რიცხვები
               </p>
             </div>
 
@@ -634,11 +577,15 @@ const AddListing = ({
                 })}
               />
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.area ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check /> მხოლოდ რიცხვები
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.area ? "text-[#F93B1D]" : ""}
+                />{" "}
+                მხოლოდ რიცხვები
               </p>
             </div>
 
@@ -656,11 +603,15 @@ const AddListing = ({
                 })}
               />
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.bedrooms ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check /> მხოლოდ რიცხვები
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.bedrooms ? "text-[#F93B1D]" : ""}
+                />{" "}
+                მხოლოდ რიცხვები
               </p>
             </div>
 
@@ -678,11 +629,15 @@ const AddListing = ({
                 })}
               ></textarea>
               <p
-                className={`flex items-center gap-2 ${
+                className={`flex items-center ${
                   errors.description ? "text-[#F93B1D]" : ""
                 }`}
               >
-                <Check /> მინიმუმ ხუთი სიტყვა
+                <IoIosCheckmark
+                  size={24}
+                  color={errors.description ? "text-[#F93B1D]" : ""}
+                />{" "}
+                მინიმუმ ხუთი სიტყვა
               </p>
             </div>
 
@@ -832,7 +787,7 @@ const AddListing = ({
               </div>
             </div>
           </div>
-          {errors.agent && <span className="text-red-500">მიუთითე აგენტი</span>}
+          {errors.agent && <p className="text-red-500 mt-1">მიუთითე აგენტი</p>}
         </div>
         <div className="flex justify-end gap-4">
           <button
@@ -850,7 +805,6 @@ const AddListing = ({
           </button>
         </div>
       </form>
-      {/* <AddAgent /> */}
     </main>
   );
 };

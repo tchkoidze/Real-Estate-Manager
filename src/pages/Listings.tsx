@@ -56,28 +56,6 @@ const Listings = ({
     );
   };
 
-  // const getAllRealestate = async () => {
-  //   const token = import.meta.env.VITE_API_TOKEN;
-
-  //   try {
-  //     const response = await axios.get(
-  //       "https://api.real-estate-manager.redberryinternship.ge/api/real-estates",
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     console.log(55);
-  //     console.log(response.data);
-  //     setRealEstate(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching listings:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   getAllRealestate();
-  // }, []);
-
   // Fetch real estate data
   const fetchRealEstate = useCallback(async () => {
     const token = import.meta.env.VITE_API_TOKEN;
@@ -161,38 +139,6 @@ const Listings = ({
     localStorage.setItem("filtersData", JSON.stringify(filters));
   }, [filters]);
 
-  // Handle text input change
-  // const handlePriceInput = (
-  //   e: React.ChangeEvent<HTMLInputElement>,
-  //   type: "min" | "max"
-  // ) => {
-  //   const value = e.target.value;
-
-  //   // Get current min and max values
-  //   const [min, max] = priceSelector || [0, 300000];
-
-  //   const newPriceSelector: [number, number] =
-  //     type === "min"
-  //       ? [parseFloat(value) || 0, max]
-  //       : [min, parseFloat(value) || 0];
-
-  //   // Validate input
-  //   const result = priceSchema.safeParse({
-  //     minPrice: newPriceSelector[0].toString(),
-  //     maxPrice: newPriceSelector[1].toString(),
-  //   });
-
-  //   if (!result.success) {
-  //     //   setError(result.error.errors[0].message);
-  //     const errorMessages = result.error.errors
-  //       .map((err) => err.message)
-  //       .join(", ");
-  //     setError(errorMessages);
-  //   } else {
-  //     setError("");
-  //     setPriceSelector(newPriceSelector);
-  //   }
-  // };
   const {
     priceSelector,
     error,
@@ -307,11 +253,6 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
-                        // defaultValue={
-                        //   // priceSelector !== null
-                        //   //   ? priceSelector[0]
-                        //   //   : ""
-                        // }
                         value={
                           priceSelector !== null && priceSelector[0] !== null
                             ? priceSelector[0]
@@ -328,9 +269,6 @@ const Listings = ({
                         type="text"
                         placeholder="დან"
                         className="w-full outline-none"
-                        // defaultValue={
-                        //   priceSelector !== null ? priceSelector[1] : ""
-                        // }
                         value={
                           priceSelector !== null && priceSelector[1] !== null
                             ? priceSelector[1]

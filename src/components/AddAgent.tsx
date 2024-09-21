@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import Check from "../icons/check";
 import { IoIosCheckmark } from "react-icons/io";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +26,7 @@ const AddAgent = ({
     register,
     handleSubmit,
     setValue,
-    getValues,
+
     formState: { errors },
   } = useForm({ resolver: zodResolver(addAgentSchema) });
 
@@ -37,6 +36,11 @@ const AddAgent = ({
   useEffect(() => {
     if (storedData) {
       setAgentData(storedData);
+      setValue("name", storedData.name);
+      setValue("surname", storedData.surname);
+      setValue("email", storedData.email);
+      setValue("phone", storedData.phone);
+      setValue("avatar", storedData.avatar);
     }
   }, []);
 
@@ -64,15 +68,9 @@ const AddAgent = ({
       console.log("File selected:", file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        console.log("File reader result:", reader.result);
-        //setImageDataUri(reader.result as string);
         handleInputChange("avatar", reader.result as string);
       };
       reader.readAsDataURL(file);
-
-      //setSelectedFile(reader.result as string); // Save the file to state
-      // You can now process the file (e.g., upload it to a server or display a preview)
-      console.log("Selected file:", file);
     }
   };
 
@@ -258,8 +256,7 @@ const AddAgent = ({
           <div className="w-full">
             <p className="firago-medium">ატვირთეთ ფოტო *</p>
             <div className="w-full h-32 flex items-center justify-center outline-1 outline-dashed rounded-lg my-1">
-              <div //className="h-full flex items-center justify-center"
-              >
+              <div>
                 <input
                   {...register("avatar", { required: true })}
                   type="file"
@@ -270,12 +267,7 @@ const AddAgent = ({
                   ref={fileInputRef}
                   className="hidden"
                 />
-                {/* <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <img src="/plus-circle.svg" alt="plus image" />
-                </button> */}
+
                 {agentData.avatar ? (
                   <div className="relative">
                     <img
@@ -285,7 +277,6 @@ const AddAgent = ({
                     />
                     <button
                       type="button"
-                      //onClick={() => setImageDataUri("")}
                       onClick={() =>
                         setAgentData((prevData) => ({
                           ...prevData,

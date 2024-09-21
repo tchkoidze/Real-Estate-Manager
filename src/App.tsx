@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import Listings from "./pages/Listings";
@@ -9,6 +9,17 @@ import PropertPage from "./pages/PropertyPage";
 
 function App() {
   const [openAddAgent, setOpenAddAgent] = useState(false);
+
+  const storedData = JSON.parse(localStorage.getItem("openAddAgent")!);
+  useEffect(() => {
+    if (storedData) {
+      setOpenAddAgent(storedData);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("openAddAgent", JSON.stringify(openAddAgent));
+  }, [openAddAgent]);
 
   return (
     <>

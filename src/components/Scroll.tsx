@@ -11,13 +11,6 @@ const Scroll = ({ filterRegion }: { filterRegion: string }) => {
   const [cardData, setCardData] = useState<Property[]>([]);
 
   useEffect(() => {
-    // if (realEstates) {
-    //   // Filter realEstates based on filterRegion
-    //   const filteredData = realEstates.filter(
-    //     (estate) => estate.city.region.name === filterRegion
-    //   );
-    //   setCardData(filteredData);
-    // }
     if (realEstates) {
       // Filter realEstates based on filterRegion and exclude estate with the given id
       const filteredData = realEstates.filter(
